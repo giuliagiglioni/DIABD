@@ -289,7 +289,8 @@ Assicurarsi che tutti i servizi HDFS, YARN, Kafka (Broker+ZK) e Neo4j siano atti
     ```bash
     bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
     bin/kafka-server-start.sh -daemon config/server.properties
-    
+    # Check su esistenza del topic
+    bin/kafka-topics.sh --list --bootstrap-server master:9092 (se non resituisce "news" crearlo con comando di sopra)
     # Per terminare servizi fare:
     bin/kafka-server-stop.sh (PRIMA)
     bin/zookeeper-server-stop.sh (DOPO)
