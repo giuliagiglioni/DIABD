@@ -115,10 +115,17 @@ hadoop version
 ### `yarn-site.xml`
 ```xml
 <configuration>
-  <property>
-    <name>yarn.nodemanager.aux-services</name>
-    <value>mapreduce_shuffle</value>
-  </property>
+    <!-- Servizi di base necessari per lo shuffle dei dati -->
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+    
+    <!-- Configurazione del ResourceManager - punta al nodo master -->
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>master</value>
+    </property>
 </configuration>
 ```
 
