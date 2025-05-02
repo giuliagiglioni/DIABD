@@ -208,7 +208,7 @@ Per permettere agli script Python eseguiti sull'host Windows (per Neo4j) di acce
         ```bash
         bin/kafka-server-start.sh -daemon config/server.properties
         ```
-    * (Opzionale) Creare il topic `news` se non esiste già:
+    * Creare il topic `news` se non esiste già:
         ```bash
         bin/kafka-topics.sh --create --topic news --bootstrap-server master:9092 --partitions 1 --replication-factor 1
         ```
@@ -282,15 +282,15 @@ Assicurarsi che tutti i servizi HDFS, YARN, Kafka (Broker+ZK) e Neo4j siano atti
     start-dfs.sh
     start-yarn.sh
     jps # Verifica processi attivi su master e worker
-    Per fermare fare (su Master):
+    #Per fermare fare (su Master):
     stop-dfs.sh && stop-yarn.sh
     ```
 2.  **Avvio Servizi Kafka** (solo se non già attivi, da `master` come utente `hadoop` nella dir di Kafka):
     ```bash
     bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
     bin/kafka-server-start.sh -daemon config/server.properties
-    # (Opzionale) Verifica/crea topic 'news'
-    Per terminare servizi fare:
+    
+    # Per terminare servizi fare:
     bin/kafka-server-stop.sh (PRIMA)
     bin/zookeeper-server-stop.sh (DOPO)
     ```
