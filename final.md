@@ -282,12 +282,17 @@ Assicurarsi che tutti i servizi HDFS, YARN, Kafka (Broker+ZK) e Neo4j siano atti
     start-dfs.sh
     start-yarn.sh
     jps # Verifica processi attivi su master e worker
+    Per fermare fare (su Master):
+    stop-dfs.sh && stop-yarn.sh
     ```
 2.  **Avvio Servizi Kafka** (solo se non già attivi, da `master` come utente `hadoop` nella dir di Kafka):
     ```bash
     bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
     bin/kafka-server-start.sh -daemon config/server.properties
     # (Opzionale) Verifica/crea topic 'news'
+    Per terminare l'esecuzione fare:
+    bin/kafka-server-stop.sh (PRIMA)
+    bin/zookeeper-server-stop.sh (DOPO)
     ```
 3.  **Esecuzione Analisi Batch** (da `master` come utente `hadoop` nella dir del progetto):
     ```bash
