@@ -207,3 +207,4 @@ TrendSpotter è un progetto **maturo, distribuito e interattivo**, che dimostra 
 - Visualizzare conoscenza in un grafo interattivo
 
 Un esempio concreto di come Big Data e AI possano supportare sistemi informativi intelligenti e dinamici.
+

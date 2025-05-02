@@ -34,11 +34,20 @@
 
 ## 🛠️ Setup Architettura e Installazione
 
-Il sistema è stato implementato su un cluster simulato composto da 3 Virtual Machine (VM) Ubuntu 20.04 ospitate su un unico host fisico, configurate come segue:
+Il sistema è stato implementato su un cluster simulato composto da 3 Virtual Machine (VM) Ubuntu 20.04 ospitate su un unico host fisico (Windows), configurate come segue:
 
 * 🧠 **master** (`192.168.56.10`): NameNode HDFS, ResourceManager YARN, Broker Kafka, nodo driver Spark.
 * ⚙️ **worker1** (`192.168.56.11`): DataNode HDFS, NodeManager YARN, nodo worker Spark.
 * ⚙️ **worker2** (`192.168.56.12`): DataNode HDFS, NodeManager YARN, nodo worker Spark.
+
+Il database a grafo **Neo4j viene eseguito direttamente sulla macchina host Windows**, separato dal cluster VM.
+
+### 🔄 Trasferimento Dati VM <-> Host Windows
+
+Per permettere agli script Python eseguiti sull'host Windows (per Neo4j) di accedere ai file CSV generati all'interno delle VM (dal job Spark Batch) o scaricati da HDFS (output dello streaming), è stata utilizzata una **cartella condivisa**.
+* **Nome Host (Esempio):** `trendspotter_shared` (creata su Windows)
+* **Punto di Mount nelle VM:** `/media/sf_shared` (configurato tramite le impostazioni di VirtualBox/VMware e le Guest Additions/Tools)
+    I file vengono copiati in questa cartella condivisa dai nodi del cluster per essere poi letti dagli script Neo4j sull'host.
 
 ### 1. Prerequisiti VM (per ogni nodo)
 
@@ -166,7 +175,7 @@ Il sistema è stato implementato su un cluster simulato composto da 3 Virtual Ma
 * Avviare HDFS e YARN dal `master`: `start-dfs.sh && start-yarn.sh`.
 * Verificare con `jps` su ogni nodo e accedendo alle UI Web (HDFS: `http://master:9870`, YARN: `http://master:8088`).
 
-### 5. Installazione Apache Spark
+### 5. Installazione Apache Spark 
 
 * Scaricare una distribuzione Spark compatibile con Hadoop e pre-compilata per Hadoop (es. Spark 3.5.0 for Hadoop 3.2 and later) sul `master`.
 * Estrarre l'archivio (es. in `/home/hadoop/spark`).
@@ -184,7 +193,7 @@ Il sistema è stato implementato su un cluster simulato composto da 3 Virtual Ma
 * Copiare la cartella Spark configurata (`/home/hadoop/spark`) dal `master` ai `worker` usando `scp`.
 * Verificare l'installazione eseguendo `spark-shell --master yarn` o `pyspark --master yarn` dal master.
 
-### 6. Installazione Apache Kafka
+### 6. Installazione Apache Kafka (su Master)
 
 * Scaricare Kafka (es. 3.6.0) sul nodo `master`.
 * Estrarre l'archivio (es. in `/home/hadoop/kafka`).
@@ -205,16 +214,21 @@ Il sistema è stato implementato su un cluster simulato composto da 3 Virtual Ma
         ```
         *(Nota: `replication-factor 1` è adatto solo per un setup con un singolo broker)*
 
-### 7. Installazione Neo4j
+### 7. Installazione Neo4j (su Host Windows)
 
 * Installare Neo4j (Server o Desktop) sulla macchina da cui si intende visualizzare il grafo e lanciare gli script `graph_builder.py` e `update_graph.py` (tipicamente la macchina **host Windows** o una VM separata, non necessariamente parte del cluster Hadoop/Spark).
 * Avviare il database Neo4j.
 * Impostare (o prendere nota de) la password per l'utente `neo4j`. Assicurarsi che corrisponda a quella usata negli script Python (`password = "progetto24"`).
 * Verificare che Neo4j sia accessibile sulla porta Bolt (default `7687`) dall'ambiente dove girano gli script Python.
 
-### 8. Preparazione Codice Progetto e Dati
+### 8. Setup Cartella Condivisa:
+* Configurare la cartella condivisa (es. `trendspotter_shared`) nelle impostazioni della VM (VirtualBox/VMware).
+* Installare le Guest Additions/VMware Tools nella VM Ubuntu.
+* Assicurarsi che la cartella sia montata (es. in `/media/sf_shared`) e che l'utente `hadoop` abbia i permessi di scrittura (potrebbe essere necessario aggiungerlo al gruppo `vboxsf` o simile: `sudo usermod -aG vboxsf hadoop` e riavviare/riloggare).
 
-* Clonare o copiare la cartella del progetto `TrendSpotter-Cluster` nella home dell'utente `hadoop` sul `master`.
+### 9. Preparazione Codice Progetto e Dati
+
+* Posizionare la cartella del progetto `TrendSpotter-Cluster` nella home dell'utente `hadoop` sul `master`.
 * Scaricare il dataset (`News_Category_Dataset_v3.json` o nome corretto) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
 * Installare le librerie Python necessarie (`pip install pyspark neo4j kafka-python pandas` - `pyspark` spesso non serve installarlo a mano se si usa `spark-submit` che lo include) nell'ambiente Python usato da Spark e dagli script locali.
 
@@ -256,9 +270,12 @@ TrendSpotter-Cluster/
 └── README.md
 ```
 
-## 🚀 Come Eseguire il Progetto (Ordine Logico)
+## 🚀 Come Eseguire il Progetto 
 
-Assicurarsi che tutti i servizi (HDFS, YARN, Kafka, Neo4j) siano attivi e che i dati/script siano nelle posizioni corrette.
+
+*(Nota: La cartella `models/` si trova su HDFS nel percorso specificato, non localmente)*
+
+Assicurarsi che tutti i servizi HDFS, YARN, Kafka (Broker+ZK) e Neo4j siano attivi, i dati/script siano nelle posizioni corrette e la cartella condivisa sia montata e accessibile.
 
 1.  **Avvio Servizi Hadoop** (solo se non già attivi, da `master` come utente `hadoop`):
     ```bash
@@ -274,8 +291,8 @@ Assicurarsi che tutti i servizi (HDFS, YARN, Kafka, Neo4j) siano attivi e che i 
     ```
 3.  **Esecuzione Analisi Batch** (da `master` come utente `hadoop` nella dir del progetto):
     ```bash
-    cd ~/TrendSpotter-Cluster # O percorso corretto
-    spark-submit --master yarn spark_jobs/analyze_batch.py
+    cd ~/TrendSpotter-Cluster 
+    spark-submit --master yarn sscripts/analyze_batch.py
     ```
     *(Questo passo crea i modelli ML su HDFS e i CSV locali in `data/output/`)*
 
@@ -285,34 +302,34 @@ Assicurarsi che tutti i servizi (HDFS, YARN, Kafka, Neo4j) siano attivi e che i 
     cp -r ~/TrendSpotter-Cluster/data/output/topics_with_cluster /media/sf_shared/
     ```
 
-5.  **Costruzione Grafo Iniziale** (dalla macchina Windows, nella directory del progetto condivisa):
+5.  **Costruzione Grafo Iniziale** (sull'**host Windows**, nella directory del progetto condivisa):
     ```powershell
-    # Esempio da PowerShell, navigare nella dir giusta
-    cd C:\percorso\cartella\condivisa\TrendSpotter-Cluster
+    # Esempio da PowerShell, navigare nella dir giusta, in questo caso
+    cd C:\trendspotter_shared
     python .\neo4j\scripts\graph_builder.py
     ```
     *(Assicurati che graph_builder.py punti al percorso corretto dei CSV, es. `../data/output/topics_with_cluster/sample_1000.csv` o simile)*
 
 6.  **Avvio Job di Streaming** (da `master` come utente `hadoop` nella dir del progetto):
     ```bash
-    cd ~/TrendSpotter-Cluster # O percorso corretto
+    cd ~/TrendSpotter-Cluster 
     spark-submit \
       --master yarn \
       --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
-      spark_jobs/streaming_job.py
+      scripts/streaming_job.py
     ```
     *(Lascia questo job in esecuzione in un terminale)*
 
 7.  **Avvio Producer Kafka (Simulazione)** (da `master` in un **nuovo** terminale, come utente `hadoop` nella dir del progetto):
     ```bash
-    cd ~/TrendSpotter-Cluster # O percorso corretto
+    cd ~/kafka 
     python kafka/producer.py
     ```
     *(Inviera notizie allo stream processato dal job al passo 6)*
 
-8.  **(Dopo un po') Copia Risultati Streaming per Neo4j:**
+8.  **(Su VM AMster Dopo un po') Copia Risultati Streaming per Neo4j:**
     * Lo streaming job scrive su HDFS (es. `hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_XXXXXX`).
-    * Copia queste cartelle da HDFS alla macchina Windows dove gira Neo4j (es. prima su FS locale della VM, poi sulla cartella condivisa):
+    * Copia queste cartelle da HDFS alla macchina Windows dove gira Neo4j (prima su FS locale della VM, poi sulla cartella condivisa):
         ```bash
         # Sulla VM master (sostituisci XXXXXX)
         hdfs dfs -get hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_XXXXXX ~/temp_stream_output
@@ -320,13 +337,13 @@ Assicurarsi che tutti i servizi (HDFS, YARN, Kafka, Neo4j) siano attivi e che i 
         rm -rf ~/temp_stream_output # Pulisci temp
         ```
 
-9.  **Aggiornamento Grafo** (dalla macchina Windows, nella directory del progetto condivisa):
+9.  **Aggiornamento Grafo** (sull'**host Windows**): Esegui lo script posizionandoti nella directory condivisa.
     ```powershell
-    # Esempio da PowerShell, navigare nella dir giusta
-    cd C:\percorso\cartella\condivisa\TrendSpotter-Cluster
+    # Esempio da PowerShell, navigare nella dir giusta, in questo caso
+    cd C:\trendspotter_shared
     python .\neo4j\scripts\update_graph.py
     ```
-    *(Assicurati che update_graph.py sia stato corretto per usare 'prediction' e punti alle cartelle copiate al passo 8)*
+    *(Assicurati che update_graph.py punti alle cartelle copiate al passo 8)*
 
 ## 📊 Grafo Neo4j ed Esplorazione
 
