@@ -1,0 +1,64 @@
+Okay, certo. Ecco un riepilogo dei comandi con i percorsi specifici basati sulla nostra conversazione. Esegui questi comandi dal terminale della tua VM Linux (come utente hadoop).
+
+Ricorda: Devi sostituire <ID_ESECUZIONE> con l'ID effettivo stampato dal tuo script streaming_job.py (es. 32d7ee) e <NOME_FILE_PART_CSV> con il nome del file specifico che vuoi vedere (es. part-00000-....csv).
+
+1. Copiare il contenuto della cartella locale VM (.../data/output/) a Windows (via cartella condivisa)
+
+    Scopo: Copiare i risultati CSV (che erano stati precedentemente salvati o copiati in /home/hadoop/TrendSpotter-Cluster/data/output/) nella cartella condivisa /media/sf_shared accessibile da Windows.
+    Comando:
+    Bash
+
+    cp -r /home/hadoop/TrendSpotter-Cluster/data/output/* /media/sf_shared/
+
+    Note: Copia tutto il contenuto (*) della cartella output nella cartella /media/sf_shared/. Assicurati di avere i permessi di scrittura su /media/sf_shared/.
+
+2. Copiare un'intera cartella di output streaming da HDFS alla VM Locale (es. nella home dir)
+
+    Scopo: Scaricare l'intera cartella dei risultati di una specifica esecuzione dello streaming job da HDFS a una nuova cartella nella home directory della VM.
+    Comando (sostituisci <ID_ESECUZIONE>):
+    Bash
+
+    hdfs dfs -get hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_<ID_ESECUZIONE> /home/hadoop/output_hdfs_<ID_ESECUZIONE>
+
+    Note: Questo creerà una nuova cartella locale chiamata output_hdfs_<ID_ESECUZIONE> nella tua home (/home/hadoop/) contenente tutti i file (_SUCCESS, part-*.csv, ecc.) da quella specifica esecuzione in HDFS.
+
+3. Vedere l'elenco dei file in una cartella di output streaming su HDFS
+
+    Scopo: Elencare i file (_SUCCESS, part-*.csv, .crc, ecc.) all'interno della cartella di output di una specifica esecuzione dello streaming job su HDFS.
+    Comando (sostituisci <ID_ESECUZIONE>):
+    Bash
+
+    hdfs dfs -ls hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_<ID_ESECUZIONE>/
+
+    Note: Questo ti aiuta a vedere i nomi esatti dei file part-*.csv che potresti voler visualizzare o copiare singolarmente.
+
+4. Vedere le prime righe (anteprima) di un file CSV specifico su HDFS
+
+    Scopo: Visualizzare le prime 10 righe (o un numero diverso specificato con -n) di un particolare file part-*.csv direttamente da HDFS, senza scaricarlo completamente.
+    Comando (sostituisci <ID_ESECUZIONE> e <NOME_FILE_PART_CSV>):
+    Bash
+
+hdfs dfs -cat hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_<ID_ESECUZIONE>/<NOME_FILE_PART_CSV> | head -n 10
+
+Note: Devi prima usare il comando ls (punto 3) per trovare il <NOME_FILE_PART_CSV> esatto che ti interessa. Puoi cambiare 10 in un altro numero se vuoi vedere più o meno righe.
+
+
+
+"Durante l'analisi iniziale del dataset originale (News_Category_Dataset_v3), che contiene circa 220.000 record dal 2012 al 2022 e 
+presenta 42 categorie distinte, sono emerse due considerazioni principali in relazione agli obiettivi del progetto TrendSpotter:
+
+    Rilevanza Temporale: Poiché TrendSpotter mira a identificare trend emergenti e a simulare scenari in tempo reale 
+    (simili a Twitter Trends o Google News), i dati più datati (2012-2019) sono stati considerati meno pertinenti per
+     l'analisi dei trend attuali. Si è quindi deciso di filtrare il dataset mantenendo solo i record a partire dal 1 Gennaio 2020.
+      Questa scelta focalizza l'analisi sui dati più recenti, allineandosi meglio agli obiettivi del progetto, e contemporaneamente 
+      riduce la dimensione del dataset migliorando le prestazioni di elaborazione (clustering) e la leggibilità del grafo risultante.
+
+    Granularità delle Categorie: L'elevato numero di categorie originali (42), che includeva anche sinonimi 
+    (es. ARTS vs ARTS & CULTURE) e categorie molto specifiche, rischiava di frammentare eccessivamente l'analisi 
+    e rendere difficile l'identificazione di macro-trend significativi. Per ottenere cluster più interpretabili e 
+    un grafo più chiaro, si è scelto di raggruppare manualmente le 42 categorie originali in 22 categorie semantiche
+     più coerenti (es. unendo BUSINESS e MONEY in BUSINESS_FINANCE, raggruppando diverse "Voices", ecc.). 
+     Questo processo di consolidamento mira a migliorare la qualità del clustering basato sul contenuto testuale 
+     (riducendo il "rumore" delle micro-categorie) e a semplificare la visualizzazione e l'interpretazione delle 
+     relazioni tra argomenti e categorie nel grafo Neo4j, supportando direttamente gli obiettivi di identificazione
+      e visualizzazione dei trend."
