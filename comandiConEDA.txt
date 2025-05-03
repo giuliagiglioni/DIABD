@@ -1,4 +1,4 @@
-Okay, certo. Ecco un riepilogo dei comandi con i percorsi specifici basati sulla nostra conversazione. Esegui questi comandi dal terminale della tua VM Linux (come utente hadoop).
+Ecco un riepilogo dei comandi con i percorsi specifici basati sulla nostra conversazione. Esegui questi comandi dal terminale della tua VM Linux (come utente hadoop).
 
 Ricorda: Devi sostituire <ID_ESECUZIONE> con l'ID effettivo stampato dal tuo script streaming_job.py (es. 32d7ee) e <NOME_FILE_PART_CSV> con il nome del file specifico che vuoi vedere (es. part-00000-....csv).
 
@@ -43,7 +43,7 @@ hdfs dfs -cat hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_<ID
 Note: Devi prima usare il comando ls (punto 3) per trovare il <NOME_FILE_PART_CSV> esatto che ti interessa. Puoi cambiare 10 in un altro numero se vuoi vedere più o meno righe.
 
 
-
+-----------------------------------EDA--------------------------------------
 "Durante l'analisi iniziale del dataset originale (News_Category_Dataset_v3), che contiene circa 220.000 record dal 2012 al 2022 e 
 presenta 42 categorie distinte, sono emerse due considerazioni principali in relazione agli obiettivi del progetto TrendSpotter:
 
@@ -62,3 +62,122 @@ presenta 42 categorie distinte, sono emerse due considerazioni principali in rel
      (riducendo il "rumore" delle micro-categorie) e a semplificare la visualizzazione e l'interpretazione delle 
      relazioni tra argomenti e categorie nel grafo Neo4j, supportando direttamente gli obiettivi di identificazione
       e visualizzazione dei trend."
+
+
+
+
+-----------------QUERY Utili per Esplorare il Grafo TrendSpotter in Neo4j--------------------
+
+(Esegui queste query nel Neo4j Browser connesso al tuo database popolato)
+
+1. Panoramica Generale del Grafo
+
+    Scopo: Capire la dimensione e la composizione di base del grafo.
+    Query:
+    Cypher
+
+    // Query 1: Statistiche Generali del Grafo
+    MATCH (n) RETURN labels(n) AS TipoNodo, count(*) AS Conteggio
+    UNION ALL
+    MATCH ()-[r]->() RETURN "Relazioni Totali" AS TipoNodo, count(r) AS Conteggio;
+
+    Spiegazione: La prima parte conta quanti nodi ci sono per ogni etichetta (:Topic, :Category, :Cluster, :User). La seconda parte conta il numero totale di relazioni nel grafo. Utile per avere un'idea iniziale della scala.
+
+2. Identificazione Trend Basata su Frequenza Cluster
+
+    Scopo: Trovare i cluster (temi scoperti dall'algoritmo) che contengono il maggior numero di notizie, indicando i temi più frequenti nel periodo analizzato.
+    Query:
+    Cypher
+
+    // Query 2: Cluster/Temi Più Frequenti (per dimensione)
+    MATCH (c:Cluster)-[:CONTAINS]->(t:Topic)
+    RETURN c.id AS ClusterID, count(t) AS NumeroNotizie
+    ORDER BY NumeroNotizie DESC
+    LIMIT 5; // Mostra i 5 cluster più grandi
+
+    Spiegazione: Raggruppa per ID del cluster, conta i topic associati e ordina per mostrare i cluster più popolosi. Anche se i cluster non sono perfetti, quelli più grandi rappresentano aree dove l'algoritmo ha raggruppato più contenuto.
+
+3. Identificazione Trend Basata su Frequenza Categorie (Raggruppate)
+
+    Scopo: Trovare le categorie editoriali (quelle raggruppate manualmente) che contengono il maggior numero di notizie, indicando i temi generali più frequenti. Questo è spesso più interpretabile del solo ID del cluster.
+    Query:
+    Cypher
+
+    // Query 3: Categorie Raggruppate Più Frequenti
+    MATCH (cat:Category)<-[:BELONGS_TO]-(t:Topic)
+    RETURN cat.name AS CategoriaRaggruppata, count(t) AS NumeroNotizie
+    ORDER BY NumeroNotizie DESC
+    LIMIT 5; // Mostra le 5 categorie più frequenti
+
+    Spiegazione: Raggruppa per nome della categoria (raggruppata), conta i topic associati e ordina. Mostra quali aree tematiche generali sono più presenti.
+
+4. Esplorazione Contenuto di un Cluster Specifico
+
+    Scopo: Capire di cosa parla un cluster identificato come potenzialmente interessante (es. uno dei più frequenti dalla Query 2).
+    Query (sostituisci 'ID_CLUSTER'):
+    Cypher
+
+    // Query 4: Esplora Contenuto Cluster (es. ID '3')
+    MATCH (c:Cluster {id: '3'})-[:CONTAINS]->(t:Topic) // <-- Cambia '3' con l'ID che ti interessa
+    RETURN t.name AS TitoloEsempio
+    LIMIT 15; // Mostra fino a 15 titoli di esempio
+
+    Spiegazione: Recupera i titoli (nomi dei nodi :Topic) appartenenti a un cluster specifico per una valutazione qualitativa del tema trattato.
+
+5. Analisi Composizione di un Cluster per Categoria
+
+    Scopo: Vedere quali categorie manuali (raggruppate) sono più presenti all'interno di un cluster specifico. Aiuta a interpretare il cluster.
+    Query (sostituisci 'ID_CLUSTER'):
+    Cypher
+
+    // Query 5: Composizione Categorie in un Cluster (es. ID '3')
+    MATCH (c:Cluster {id: '3'})-[:CONTAINS]->(t:Topic)-[:BELONGS_TO]->(cat:Category) // <-- Cambia '3'
+    RETURN cat.name AS CategoriaRaggruppata, count(t) AS ConteggioNotizie
+    ORDER BY ConteggioNotizie DESC;
+
+    Spiegazione: Conta quanti topic di ciascuna categoria raggruppata appartengono a un dato cluster. Mostra quanto è "puro" o "misto" un cluster rispetto alle categorie manuali.
+
+6. Dimostrazione Raccomandazione (Basata su Cluster)
+
+    Scopo: Far vedere come il grafo abilita raccomandazioni "content-based" suggerendo topic da cluster simili a quelli che piacciono all'utente.
+    Query (per utente 'Alessia'):
+    Cypher
+
+    // Query 6: Raccomandazione Basata su Cluster per 'Alessia'
+    MATCH (u:User {name:'Alessia'})-[:INTERESTED_IN]->(liked_topic:Topic) // Topic che le piacciono
+    MATCH (liked_topic)<-[:CONTAINS]-(c:Cluster)-[:CONTAINS]->(rec_topic:Topic) // Altri topic nello stesso cluster
+    WHERE NOT (u)-[:INTERESTED_IN]->(rec_topic) // Che non le piacciono già
+    RETURN DISTINCT rec_topic.name AS Raccomandazione, c.id AS DalCluster // Mostra raccomandazione e cluster di provenienza
+    LIMIT 10;
+
+    Spiegazione: Trova i cluster dei topic che piacciono ad Alessia e suggerisce altri topic dagli stessi cluster. (Nota: la qualità dipende dalla coerenza dei cluster!)
+
+7. Dimostrazione Raccomandazione (Basata su Categoria Raggruppata)
+
+    Scopo: Far vedere raccomandazioni "content-based" più robuste basate sulle categorie manuali raggruppate.
+    Query (per utente 'Alessia'):
+    Cypher
+
+    // Query 7: Raccomandazione Basata su Categoria per 'Alessia'
+    MATCH (u:User {name:'Alessia'})-[:INTERESTED_IN]->(liked_topic:Topic) // Topic che le piacciono
+    MATCH (liked_topic)-[:BELONGS_TO]->(cat:Category) // Categoria di quei topic
+    MATCH (rec_topic:Topic)-[:BELONGS_TO]->(cat) // Altri topic nella stessa categoria
+    WHERE NOT (u)-[:INTERESTED_IN]->(rec_topic) // Che non le piacciono già
+    RETURN DISTINCT rec_topic.name AS Raccomandazione, cat.name AS DallaCategoria // Mostra raccomandazione e categoria
+    LIMIT 10;
+
+    Spiegazione: Trova le categorie dei topic che piacciono ad Alessia e suggerisce altri topic dalle stesse categorie. (Questo probabilmente darà risultati più coerenti).
+
+8. Trovare Utenti Interessati a un Tema/Cluster
+
+    Scopo: Dimostrare come collegare i temi scoperti agli utenti.
+    Query (per Cluster 'ID_CLUSTER'):
+    Cypher
+
+    // Query 8: Utenti Interessati a Topic nel Cluster (es. ID '3')
+    MATCH (c:Cluster {id: '3'})-[:CONTAINS]->(t:Topic)<-[:INTERESTED_IN]-(u:User) // <-- Cambia '3'
+    RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse;
+
+    Spiegazione: Trova quali utenti (tra quelli simulati) hanno mostrato interesse per i topic che appartengono a un cluster specifico.
+
+Queste 8 query offrono una buona varietà per mostrare cosa puoi fare con il grafo che hai costruito. Spiegano come identificare temi frequenti (Query 2 e 3), come esplorarli (Query 4 e 5), come generare diversi tipi di raccomandazioni (Query 6 e 7) e come collegare gli utenti ai temi (Query 8). Puoi selezionare quelle che ritieni più significative da aggiungere al README o da mostrare durante una presentazione.
