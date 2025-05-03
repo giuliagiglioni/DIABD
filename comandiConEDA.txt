@@ -1,5 +1,5 @@
 Ecco un riepilogo dei comandi con i percorsi specifici basati sulla nostra conversazione. Esegui questi comandi dal terminale della tua VM Linux (come utente hadoop).
-
+MATCH (n) DETACH DELETE n
 Ricorda: Devi sostituire <ID_ESECUZIONE> con l'ID effettivo stampato dal tuo script streaming_job.py (es. 32d7ee) e <NOME_FILE_PART_CSV> con il nome del file specifico che vuoi vedere (es. part-00000-....csv).
 
 1. Copiare il contenuto della cartella locale VM (.../data/output/) a Windows (via cartella condivisa)
@@ -66,7 +66,7 @@ presenta 42 categorie distinte, sono emerse due considerazioni principali in rel
 
 
 
------------------QUERY Utili per Esplorare il Grafo TrendSpotter in Neo4j--------------------
+-----------------QUERY Utili per Esplorare il Grafo TrendSpotter in Neo4j
 
 (Esegui queste query nel Neo4j Browser connesso al tuo database popolato)
 
