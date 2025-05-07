@@ -325,9 +325,8 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
     # Versione Connettore Neo4j per Spark 3.5 e Scala 2.12/2.13
     NEO4J_CONNECTOR_VERSION="5.2.0" # Verifica la migliore per la tua build Spark
     # export PYSPARK_PYTHON=/usr/bin/python3.8 # Se necessario
-    spark-submit --master yarn \
-      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.neo4j.spark:neo4j-connector-apache-spark_2.13:$NEO4J_CONNECTOR_VERSION \
-      spark_jobs/streaming_job.py
+    spark-submit --master yarn   --conf spark.pyspark.python=/usr/bin/python3.8   --conf spark.executorEnv.PYTHONPATH=/home/hadoop/.local/lib/python3.8/site-packages   --conf spark.driverEnv.PYTHONPATH=/home/hadoop/.local/lib/python3.8/site-packages   --conf spark.executorEnv.HF_HOME=/home/hadoop/.cache/huggingface --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.neo4j:neo4j-connector-apache-spark_2.12:5.3.6_for_spark_3 streaming_job_final.py 
+
     ```
     *(Lascia in esecuzione. Monitora la console per i trend e Neo4j Browser per gli aggiornamenti del grafo)*
 5.  **Avvio Producer Kafka** (da `master`, in un nuovo terminale):
