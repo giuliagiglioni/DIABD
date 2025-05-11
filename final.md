@@ -321,8 +321,6 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 ```
 ## 🚀 Come Eseguire il Progetto
 
-## 🚀 Come Eseguire il Progetto (Ordine Finale)
-
 1.  **Setup Completo:** Hadoop, YARN, Spark, Kafka, Neo4j (su `master` VM), Java 11, librerie Python. Dataset JSON su HDFS.
 2.  **Esecuzione Analisi Batch (Finale)** (da `master`):
     ```bash
