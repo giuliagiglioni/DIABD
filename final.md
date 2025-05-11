@@ -2,9 +2,9 @@
 
 ## 🚀 Introduzione
 
-**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data per offrire una soluzione end-to-end: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla costruzione di un grafo della conoscenza in Neo4j.
+**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla costruzione di un grafo in Neo4j.
 
-Questo progetto non si limita a processare dati, ma mira a trasformarli in insight azionabili e a creare una struttura dati relazionale che può servire come fondamenta per sistemi di suggerimento, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
+Questo progetto non si limita a processare dati, ma mira a creare una struttura dati relazionale che può servire come fondamenta per sistemi di suggerimento, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
 
 ### 🎯 Obiettivi Principali Raggiunti
 
