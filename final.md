@@ -1,54 +1,53 @@
-# 🧠 TrendSpotter: Analisi e Raccomandazione di Trend Emergenti da Flussi di Dati
+# 🧠 TrendSpotter: Analisi e Abilitazione di Raccomandazioni da Trend Emergenti su Flussi di Dati
 
 ## 🚀 Introduzione
 
-**TrendSpotter** è un sistema distribuito all'avanguardia, progettato per l'identificazione e la raccomandazione di **trend emergenti** in tempo reale. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data per offrire una soluzione end-to-end: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla visualizzazione interattiva delle relazioni in un grafo della conoscenza Neo4j.
+**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data per offrire una soluzione end-to-end: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla costruzione di un grafo della conoscenza in Neo4j.
 
-Questo progetto non si limita a processare dati, ma mira a trasformarli in insight azionabili, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
+Questo progetto non si limita a processare dati, ma mira a trasformarli in insight azionabili e a creare una struttura dati relazionale che può servire come fondamenta per sistemi di suggerimento, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
 
 ### 🎯 Obiettivi Principali Raggiunti
 
-1.  **Identificare e Monitorare Trend:** Il sistema individua i **temi** (argomenti) più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (K=5). L'attività di questi temi viene poi **monitorata nel tempo** grazie all'analisi del flusso streaming con finestre temporali, i cui risultati aggregati vengono visualizzati sulla console.
-2.  **Abilitare Raccomandazioni Personalizzate:** È stata costruita una ricca **struttura a grafo in Neo4j** che modella le relazioni tra utenti (simulati), notizie/topic, i cluster tematici a cui appartengono e le loro categorie editoriali (raggruppate). Questa struttura *abilita* la generazione di diverse tipologie di raccomandazioni personalizzate, la cui potenzialità è dimostrata tramite query Cypher esemplificative.
+1.  **Identificare e Monitorare Trend:** Il sistema individua i **temi** (argomenti) più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (configurato per **K=5** cluster). L'attività di questi temi viene poi **monitorata nel tempo** grazie all'analisi del flusso streaming con **finestre temporali non sovrapposte (tumbling windows)**, i cui risultati aggregati (conteggi per cluster) vengono visualizzati sulla console con `outputMode("update")` per una chiara interpretazione sequenziale.
+2.  **Abilitare Raccomandazioni Personalizzate (tramite Grafo):** È stata costruita una ricca **struttura a grafo in Neo4j** che modella le relazioni tra utenti (simulati), notizie/topic (con `headline` e `short_description`), i 5 cluster tematici a cui appartengono e le loro categorie editoriali (raggruppate). Questa struttura **abilita la generazione di diverse tipologie di raccomandazioni personalizzate**, la cui potenzialità è **dimostrata tramite query Cypher esemplificative**, senza l'implementazione di algoritmi di Machine Learning specifici per la raccomandazione (come ALS) all'interno di Spark.
 3.  **Visualizzare Complesse Relazioni:** Viene offerta una **rappresentazione visiva chiara ed interattiva** (tramite Neo4j Browser) dei legami tra argomenti (singole notizie), le categorie editoriali raggruppate, i 5 cluster tematici scoperti automaticamente e gli utenti simulati, permettendo un'esplorazione intuitiva dei dati.
 
-## 🧰 Stack Tecnologico 
+## 🧰 Stack Tecnologico
 
-| Tecnologia                 | Scopo Principale nel Progetto                                                                                                | Versione (Esempio) |
-| :------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :----------------- |
-| **Apache Kafka** | Ingestione e buffering di flussi di notizie simulate in tempo reale (topic: `news`).                                            | 3.6.0              |
-| **Apache Spark** | Elaborazione distribuita batch e streaming; generazione Sentence Embeddings (`all-mpnet-base-v2`); preprocessing feature (Scaler, PCA); clustering (KMeans K=5); analisi trend su finestre. | 3.5.0              |
-| **Apache Hadoop** | Archiviazione distribuita (HDFS per dataset originale, modelli Scaler/PCA/KMeans K=5, checkpoints); gestione risorse cluster (YARN). | 3.2.4              |
-| **Neo4j Community Edition** | Modellazione, persistenza (su VM `master`) e visualizzazione del grafo della conoscenza.                                       | 4.4.x              |
-| **Python & PySpark** | Linguaggio principale per scripting, sviluppo UDF, interazione con Kafka e Neo4j.                                           | Python 3.8+        |
-| **Sentence Transformers** | Libreria Python per generare embedding semantici di alta qualità dal testo.                                                 | Ultima stabile     |
-| **Neo4j Spark Connector** | Libreria Spark per scrivere dati da Spark Streaming direttamente e automaticamente a Neo4j.                                   | 5.2.0 (per Spark 3.5) |
-| **Java (OpenJDK)** | Ambiente di esecuzione per Hadoop, Spark e Neo4j 4.4 sul cluster.                                                            | 11                 |
+| Tecnologia                 | Scopo Principale nel Progetto                                                                                                | Versione (Indicativa) |
+| :------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
+| **Apache Kafka** | Ingestione e buffering di flussi di notizie simulate in tempo reale (topic configurabile, es. `news_final_test`).                  | 3.6.0                 |
+| **Apache Spark** | Elaborazione distribuita batch e streaming; generazione Sentence Embeddings (`all-mpnet-base-v2`); preprocessing feature (Scaler, PCA); clustering (KMeans K=5); analisi trend su finestre tumbling. | 3.5.0                 |
+| **Apache Hadoop** | Archiviazione distribuita (HDFS per dataset, modelli ML, checkpoints); gestione risorse cluster (YARN).                          | 3.2.4                 |
+| **Neo4j Community Edition**| Modellazione, persistenza (su VM `master`) e visualizzazione del grafo della conoscenza.                                       | 4.4.x                 |
+| **Python & PySpark** | Linguaggio principale per scripting, sviluppo UDF, interazione con Kafka e Neo4j.                                           | Python 3.8+           |
+| **Sentence Transformers** | Libreria Python per generare embedding semantici di alta qualità dal testo.                                                 | Ultima stabile        |
+| **Neo4j Spark Connector** | Libreria Spark per scrivere dati da Spark Streaming direttamente a Neo4j.                                                   | 5.2.0 (o compatibile) |
+| **Java (OpenJDK)** | Ambiente di esecuzione per Hadoop, Spark e Neo4j 4.4 sul cluster.                                                            | 11                    |
 
 ## 📦 Dataset Utilizzato
 
-* **Dataset Iniziale:** `News_Category_Dataset_v3.json`, caricato su HDFS (`hdfs:///user/hadoop/news/`). Si utilizzano le colonne: `headline`, `short_description`, `category`, `date`.
-* **Dati di Streaming (Simulati):** Messaggi JSON inviati da `kafka/producer.py` al topic `news`, contenenti `headline` e `category` (originale).
+* **Dataset Iniziale:** `News_Category_Dataset_v3.json`, caricato su HDFS (es. `hdfs:///user/hadoop/news/`). Si utilizzano le colonne: `headline`, `short_description`, `category`, `date`.
+* **Dati di Streaming (Simulati):** Messaggi JSON inviati da `kafka/producer.py` (o versione che legge da file) al topic Kafka configurato, contenenti `headline`, `short_description` e `category` (originale).
 
 ## 🛠️ Setup Architettura e Installazione
 
-Il sistema è stato implementato su un cluster simulato composto da 3 Virtual Machine (VM) Ubuntu 20.04 ospitate su un unico host fisico (Windows), configurate come segue:
+Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) Ubuntu 20.04.
 
-* 🧠 **master** (`192.168.56.10`): NameNode HDFS, ResourceManager YARN, Broker Kafka, nodo driver Spark.
+* 🧠 **master** (`192.168.56.10`): NameNode HDFS, ResourceManager YARN, Broker Kafka, Server Neo4j 4.4, nodo driver Spark.
 * ⚙️ **worker1** (`192.168.56.11`): DataNode HDFS, NodeManager YARN, nodo worker Spark.
 * ⚙️ **worker2** (`192.168.56.12`): DataNode HDFS, NodeManager YARN, nodo worker Spark.
 
-Il database a grafo **Neo4j viene eseguito direttamente sulla VM del Master**.
+L'installazione dei componenti principali è facilitata da script di setup.
 
-### 1. Prerequisiti VM (per ogni nodo)
+### 1. Prerequisiti Comuni alle VM
 
-* Ubuntu 20.04 Desktop/Server
-* Minimo 4 core CPU, 8 GB RAM, 40 GB Disco
-* Java 8 (`openjdk-8-jdk`)
-* Python 3.10+ (`python3`, `python3-pip`)
-* Librerie Python comuni (es. `neo4j`, `kafka-python`) - installabili via `pip`.
-* SSH Server (`openssh-server`)
-* Utilità: `net-tools`, `rsync`
+* Ubuntu 20.04 Desktop/Server.
+* Minimo 4 core CPU, 8 GB RAM, 40-60 GB Disco (più spazio consigliato per il master).
+* **Java 11 (`openjdk-11-jdk`)** installato e impostato come default.
+* Python 3.8+ (`python3`, `python3-pip`).
+* SSH Server (`openssh-server`), `net-tools`, `rsync`.
+* Creazione di un utente `hadoop` su tutte le VM, con privilegi `sudo` e configurazione di SSH senza password tra tutti i nodi (incluso `localhost` su ciascuno) per l'utente `hadoop`.
 
 ### 2. Configurazione Rete e Host
 
@@ -94,76 +93,92 @@ Il database a grafo **Neo4j viene eseguito direttamente sulla VM del Master**.
     # Copiare id_rsa.pub di master su authorized_keys dei worker e viceversa se necessario
     # Verificare con ssh worker1, ssh worker2, ssh master, ssh localhost
     ```
+### 4. Script di Setup (da eseguire come utente `hadoop`)
 
-### 4. Installazione Hadoop (HDFS+YARN)
+L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestite tramite i seguenti script:
 
-* Scaricare una distribuzione Hadoop stabile (es. 3.2.4) sul nodo `master`.
-* Estrarre l'archivio (es. in `/home/hadoop/hadoop`).
-* Configurare le variabili d'ambiente Hadoop (`HADOOP_HOME`, aggiungere `$HADOOP_HOME/bin` e `$HADOOP_HOME/sbin` al `PATH`) in `~/.bashrc` su **tutti** i nodi. Non dimenticare `source ~/.bashrc`.
-* **Configurare i file XML** in `$HADOOP_HOME/etc/hadoop/` come segue:
-    * **`hadoop-env.sh`**: Impostare `export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64` (o il percorso corretto).
-    * **`core-site.xml`**:
-        ```xml
-        <configuration>
-          <property>
-            <name>fs.defaultFS</name>
-            <value>hdfs://master:9000</value>
-          </property>
-        </configuration>
-        ```
-    * **`hdfs-site.xml`**:
-        ```xml
-        <configuration>
-          <property>
-            <name>dfs.namenode.name.dir</name>
-            <value>file:/home/hadoop/hadoop_data/hdfs/namenode</value> </property>
-          <property>
-            <name>dfs.datanode.data.dir</name>
-            <value>file:/home/hadoop/hadoop_data/hdfs/datanode</value> </property>
-          <property>
-            <name>dfs.replication</name>
-            <value>2</value> </property>
-        </configuration>
-        ```
-    * **`mapred-site.xml`** (potrebbe essere necessario rinominare `mapred-site.xml.template`):
-        ```xml
-        <configuration>
-          <property>
-            <name>mapreduce.framework.name</name>
-            <value>yarn</value>
-          </property>
-           <property>
-               <name>mapreduce.application.classpath</name>
-               <value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*</value>
-           </property>
-        </configuration>
-        ```
-    * **`yarn-site.xml`**:
-        ```xml
-        <configuration>
-          <property>
-            <name>yarn.nodemanager.aux-services</name>
-            <value>mapreduce_shuffle</value>
-          </property>
-          <property>
-            <name>yarn.resourcemanager.hostname</name>
-            <value>master</value> </property>
-           <property>
-               <name>yarn.application.classpath</name>
-               <value>$HADOOP_CONF_DIR,$HADOOP_COMMON_HOME/share/hadoop/common/*,$HADOOP_COMMON_HOME/share/hadoop/common/lib/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/lib/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*,$HADOOP_YARN_HOME/share/hadoop/yarn/*,$HADOOP_YARN_HOME/share/hadoop/yarn/lib/*</value>
-           </property>
-        </configuration>
-        ```
-    * **`workers`** (o `slaves` nelle versioni precedenti): Elencare gli hostname dei nodi worker (e opzionalmente master se deve fare anche da datanode):
-        ```
-        master
-        worker1
-        worker2
-        ```
-* Creare le directory specificate in `hdfs-site.xml` su tutti i nodi rilevanti (es. `mkdir -p /home/hadoop/hadoop_data/hdfs/namenode` su master, `mkdir -p /home/hadoop/hadoop_data/hdfs/datanode` su master, worker1, worker2).
-* Copiare la cartella Hadoop configurata (`/home/hadoop/hadoop`) dal `master` ai `worker` usando `scp`.
-* **Formattare HDFS (SOLO LA PRIMA VOLTA!)** dal `master`: `hdfs namenode -format`
-* Avviare HDFS e YARN dal `master`: `start-dfs.sh && start-yarn.sh`.
+* **A. `setup_hadoop.sh`**
+    * **Dove eseguire:** Solo sul nodo `master`.
+    * **Quando:** Dopo la configurazione base della VM master.
+    * **Scopo:** Installa Hadoop (es. 3.2.4) in `~/hadoop`, crea directory per NameNode/DataNode, imposta variabili ambiente (`JAVA_HOME` per Java 11, `HADOOP_HOME`, `PATH`) in `~/.bashrc`, e pre-configura i file XML essenziali.
+    * **File di Configurazione Hadoop Chiave (impostati/verificati da `setup_hadoop.sh` e modifiche manuali):**
+        Si trovano in `$HADOOP_HOME/etc/hadoop/`.
+        * **`hadoop-env.sh`**: Assicurarsi che `JAVA_HOME` punti a Java 11:
+            ```bash
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 
+            ```
+        * **`core-site.xml`**:
+            ```xml
+            <configuration>
+              <property>
+                <name>fs.defaultFS</name>
+                <value>hdfs://master:9000</value>
+              </property>
+            </configuration>
+            ```
+        * **`hdfs-site.xml`**:
+            ```xml
+            <configuration>
+              <property>
+                <name>dfs.namenode.name.dir</name>
+                <value>file:/home/hadoop/hadoop_data/hdfs/namenode</value> 
+              </property>
+              <property>
+                <name>dfs.datanode.data.dir</name>
+                <value>file:/home/hadoop/hadoop_data/hdfs/datanode</value> 
+              </property>
+              <property>
+                <name>dfs.replication</name>
+                <value>2</value> 
+              </property>
+            </configuration>
+            ```
+        * **`mapred-site.xml`**:
+            ```xml
+            <configuration>
+              <property>
+                <name>mapreduce.framework.name</name>
+                <value>yarn</value>
+              </property>
+              <property>
+                  <name>mapreduce.application.classpath</name>
+                  <value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*</value>
+              </property>
+            </configuration>
+            ```
+        * **`yarn-site.xml`**:
+            ```xml
+            <configuration>
+              <property>
+                <name>yarn.nodemanager.aux-services</name>
+                <value>mapreduce_shuffle</value>
+              </property>
+              <property>
+                <name>yarn.resourcemanager.hostname</name>
+                <value>master</value> 
+              </property>
+              <property>
+                  <name>yarn.application.classpath</name>
+                  <value>$HADOOP_CONF_DIR,$HADOOP_COMMON_HOME/share/hadoop/common/*,$HADOOP_COMMON_HOME/share/hadoop/common/lib/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/lib/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*,$HADOOP_YARN_HOME/share/hadoop/yarn/*,$HADOOP_YARN_HOME/share/hadoop/yarn/lib/*</value>
+              </property>
+            </configuration>
+            ```
+        * **`workers`** (o `slaves`):
+            ```
+            master
+            worker1
+            worker2
+            ```
+    * **Azioni Post-Script `setup_hadoop.sh` (Manuali):**
+        1.  Copiare la cartella Hadoop configurata (`~/hadoop`) dal `master` ai `worker`:
+            ```bash
+            scp -r ~/hadoop hadoop@worker1:/home/hadoop/
+            scp -r ~/hadoop hadoop@worker2:/home/hadoop/
+            ```
+        2.  Assicurarsi che `~/.bashrc` sui worker rifletta le variabili d'ambiente Hadoop e ricaricarlo (`source ~/.bashrc`).
+        3.  Creare le directory per DataNode sui worker (es. `mkdir -p /home/hadoop/hadoop_data/hdfs/datanode`).
+        4.  Formattare HDFS (SOLO LA PRIMA VOLTA!) dal `master`: `hdfs namenode -format`.
+        5.  Avviare HDFS e YARN dal `master`: `start-dfs.sh && start-yarn.sh`.
 * Verificare con `jps` su ogni nodo e accedendo alle UI Web (HDFS: `http://master:9870`, YARN: `http://master:8088`).
 
 ### 5. Installazione Apache Spark 
