@@ -217,7 +217,8 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
         2.  Avviare ZooKeeper: `bin/zookeeper-server-start.sh -daemon config/zookeeper.properties` (dalla dir Kafka).
         3.  Avviare il Broker Kafka: `bin/kafka-server-start.sh -daemon config/server.properties`.
         4.  Creare il topic (es. `news_final_test`): `bin/kafka-topics.sh --create --topic NOME_TOPIC --bootstrap-server master:9092 --partitions 1 --replication-factor 1`.
-        *(Nota: `replication-factor 1` è adatto solo per un setup con un singolo broker)*
+        
+   *(Nota: `replication-factor 1` è adatto solo per un setup con un singolo broker)*
 
 ### 7. Installazione Neo4j (su VM Master)
 
