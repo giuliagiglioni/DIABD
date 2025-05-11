@@ -100,7 +100,7 @@ L'installazione dei componenti principali è facilitata da script di setup.
 
 L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestite tramite i seguenti script:
 
-`setup_hadoop.sh`**
+*`setup_hadoop.sh`**
     * **Dove eseguire:** Solo sul nodo `master`.
     * **Quando:** Dopo la configurazione base della VM master.
     * **Scopo:** Installa Hadoop in `~/hadoop`, crea directory per NameNode/DataNode, imposta variabili ambiente (`JAVA_HOME` per Java 11, `HADOOP_HOME`, `PATH`) in `~/.bashrc`, e pre-configura i file XML essenziali.
