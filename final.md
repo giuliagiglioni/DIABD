@@ -179,63 +179,63 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
         3.  Creare le directory per DataNode sui worker (es. `mkdir -p /home/hadoop/hadoop_data/hdfs/datanode`).
         4.  Formattare HDFS (SOLO LA PRIMA VOLTA!) dal `master`: `hdfs namenode -format`.
         5.  Avviare HDFS e YARN dal `master`: `start-dfs.sh && start-yarn.sh`.
-* Verificare con `jps` su ogni nodo e accedendo alle UI Web (HDFS: `http://master:9870`, YARN: `http://master:8088`).
+        6.   Verificare con `jps` su ogni nodo e accedendo alle UI Web (HDFS: `http://master:9870`, YARN: `http://master:8088`).
 
 ### 5. Installazione Apache Spark 
 
-* Scaricare una distribuzione Spark compatibile con Hadoop e pre-compilata per Hadoop (es. Spark 3.5.0 for Hadoop 3.2 and later) sul `master`.
-* Estrarre l'archivio (es. in `/home/hadoop/spark`).
-* Configurare le variabili d'ambiente Spark (`SPARK_HOME`, aggiungere `$SPARK_HOME/bin` al `PATH`) in `~/.bashrc` su **tutti** i nodi. `source ~/.bashrc`.
-* Configurare Spark per usare YARN e trovare Hadoop:
-    * Copiare `spark-env.sh.template` in `spark-env.sh` in `$SPARK_HOME/conf/`.
-    * Modificare `spark-env.sh` aggiungendo almeno:
-        ```bash
-        export SPARK_MASTER_HOST=master # Se si usa Spark Standalone Master (opzionale con YARN)
-        export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 # O percorso corretto
-        export HADOOP_CONF_DIR=/home/hadoop/hadoop/etc/hadoop # Fondamentale per trovare YARN/HDFS
-        # Potrebbe essere utile impostare SPARK_DIST_CLASSPATH se ci sono problemi a trovare classi Hadoop
-        # export SPARK_DIST_CLASSPATH=$(hadoop classpath)
-        ```
-* Copiare la cartella Spark configurata (`/home/hadoop/spark`) dal `master` ai `worker` usando `scp`.
-* Verificare l'installazione eseguendo `spark-shell --master yarn` o `pyspark --master yarn` dal master.
+**B. `setup_spark.sh`**
+    * **Dove eseguire:** Su **tutti e 3 i nodi** (`master`, `worker1`, `worker2`).
+    * **Quando:** Dopo `setup_hadoop.sh` e la copia/configurazione di Hadoop sui worker.
+    * **Scopo:** Installa Apache Spark (es. 3.5.0), configura `spark-env.sh` e il file `workers`, imposta variabili ambiente (`SPARK_HOME`, `PATH`).
+    * **File di Configurazione Spark Chiave (impostati/verificati da `setup_spark.sh` e modifiche manuali):**
+        Si trovano in `$SPARK_HOME/conf/`.
+        * **`spark-env.sh`**:
+            ```bash
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 # Java 11
+            export HADOOP_CONF_DIR=/home/hadoop/hadoop/etc/hadoop
+            export SPARK_MASTER_HOST=master # Utile per Spark Standalone
+            ```
+        * **`workers`** (o `slaves`): Questo file è più rilevante per Spark in modalità Standalone. Quando si usa YARN, YARN gestisce i worker. Tuttavia, per coerenza:
+            ```
+            master
+            worker1
+            worker2
+            ```
+    * **Azioni Post-Script:** Ricaricare `~/.bashrc` su tutti i nodi.
 
 ### 6. Installazione Apache Kafka (su Master)
 
-* Scaricare Kafka (es. 3.6.0) sul nodo `master`.
-* Estrarre l'archivio (es. in `/home/hadoop/kafka`).
-* Kafka richiede ZooKeeper. Kafka include uno script per avviare uno ZooKeeper semplice per test, altrimenti installare ZooKeeper separatamente per ambienti più robusti.
-* **Avvio (esempio con ZK integrato):**
-    * Avviare ZooKeeper in background:
-        ```bash
-        # Dalla directory di Kafka sul master
-        bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
-        ```
-    * Avviare il Broker Kafka in background:
-        ```bash
-        bin/kafka-server-start.sh -daemon config/server.properties
-        ```
-    * Creare il topic `news` se non esiste già:
-        ```bash
-        bin/kafka-topics.sh --create --topic news --bootstrap-server master:9092 --partitions 1 --replication-factor 1
-        ```
+* **C. `setup_kafka.sh`**
+    * **Dove eseguire:** Solo sul nodo `master`.
+    * **Quando:** Dopo aver configurato Spark.
+    * **Scopo:** Scarica/installa Kafka (es. 3.6.0) e ZooKeeper (incluso), imposta variabili ambiente (`KAFKA_HOME`, `PATH`).
+    * **Azioni Post-Script (per Avviare Kafka e Creare Topic):**
+        1.  Ricaricare `~/.bashrc` sul master.
+        2.  Avviare ZooKeeper: `bin/zookeeper-server-start.sh -daemon config/zookeeper.properties` (dalla dir Kafka).
+        3.  Avviare il Broker Kafka: `bin/kafka-server-start.sh -daemon config/server.properties`.
+        4.  Creare il topic (es. `news_final_test`): `bin/kafka-topics.sh --create --topic NOME_TOPIC --bootstrap-server master:9092 --partitions 1 --replication-factor 1`.
         *(Nota: `replication-factor 1` è adatto solo per un setup con un singolo broker)*
 
-### 7. Installazione Neo4j (su Host Windows)
+### 7. Installazione Neo4j (su VM Master)
 
-* Installare Neo4j (Server o Desktop) sulla macchina da cui si intende visualizzare il grafo e lanciare gli script `graph_builder.py` e `update_graph.py` (tipicamente la macchina **host Windows** o una VM separata, non necessariamente parte del cluster Hadoop/Spark).
-* Avviare il database Neo4j.
-* Impostare (o prendere nota de) la password per l'utente `neo4j`. Assicurarsi che corrisponda a quella usata negli script Python (`password = "progetto24"`).
-* Verificare che Neo4j sia accessibile sulla porta Bolt (default `7687`) dall'ambiente dove girano gli script Python.
+* Aggiungere repository APT Neo4j, installare `neo4j=1:4.4.x -y`.
+* Configurare `/etc/neo4j/neo4j.conf`:
+    * `server.bolt.listen_address=0.0.0.0:7687`
+    * `server.http.listen_address=0.0.0.0:7474`
+    * Impostare limiti di memoria (es. heap `1g`, pagecache `1g`).
+    * `dbms.security.auth_enabled=true`.
+* Avviare/abilitare servizio: `sudo systemctl start neo4j && sudo systemctl enable neo4j`.
+* Impostare password utente `neo4j` a `progetto24` tramite `cypher-shell`.
+* Verificare accesso a Neo4j Browser da host Windows: `http://master_ip:7474`.
 
-### 8. Setup Cartella Condivisa:
-* Configurare la cartella condivisa (es. `trendspotter_shared`) nelle impostazioni della VM (VirtualBox/VMware).
-* Installare le Guest Additions/VMware Tools nella VM Ubuntu.
-* Assicurarsi che la cartella sia montata (es. in `/media/sf_shared`) e che l'utente `hadoop` abbia i permessi di scrittura (potrebbe essere necessario aggiungerlo al gruppo `vboxsf` o simile: `sudo usermod -aG vboxsf hadoop` e riavviare/riloggare).
+### 8. Librerie Python
+
+* Installare le librerie Python necessarie (`pandas`, `numpy`, `pyarrow`, `sentence-transformers`, `torch`, `neo4j`, `kafka-python`) nell'ambiente Python (Java 11 compatibile) usato da Spark su tutti i nodi (master e worker) e sull'ambiente del master per gli script Python locali. La soluzione più robusta per Spark è pacchettizzare un ambiente Conda e distribuirlo con `--archives`.
 
 ### 9. Preparazione Codice Progetto e Dati
 
 * Posizionare la cartella del progetto `TrendSpotter-Cluster` nella home dell'utente `hadoop` sul `master`.
-* Scaricare il dataset (`News_Category_Dataset_v3.json` o nome corretto) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
+* Scaricare il dataset (`News_Category_Dataset_v3.json`) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
 * Installare le librerie Python necessarie (`pip install pyspark neo4j kafka-python pandas` - `pyspark` spesso non serve installarlo a mano se si usa `spark-submit` che lo include) nell'ambiente Python usato da Spark e dagli script locali.
 
 ## 🧪 Preprocessing dei Dati (Applicato in Batch e Stream)
@@ -262,29 +262,27 @@ Per superare i limiti di approcci più semplici, è stata implementata una pipel
 L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scoperti:
 
 * **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quanti topic per cluster) e la loro composizione rispetto alle categorie raggruppate (output CSV `topics_vs_category`).
-* **Trend Emergenti (Streaming):** Monitorati in (near) real-time dallo `streaming_job.py`. Lo script calcola e **stampa sulla console** la frequenza (numero di notizie) per ciascuno dei 5 `ClusterID` all'interno di **finestre temporali scorrevoli** (es. 10 minuti di durata, aggiornate ogni 5 minuti). Un aumento significativo di questi conteggi per un `ClusterID` specifico, o la sua persistente alta frequenza, segnala un trend. L'analisi qualitativa dei topic (titoli) all'interno di un cluster "caldo", esplorabile tramite Neo4j, ne rivela il significato semantico.
+* **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato.
 
-    **Guida all'Output dei Trend sulla Console:**
+    **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
     ```
     ======================================================================
-       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
-       - Verranno stampate periodicamente tabelle 'window | ClusterID | count'.
-       - Ogni 'window' rappresenta un intervallo di tempo definito.
-       - All'interno di ogni 'window', i 'ClusterID' (da 0 a 4) sono ORDINATI per 'count' DECRESCENTE.
-       - Il ClusterID che appare PER PRIMO per la finestra temporale più recente è il TEMA PIU' FREQUENTE.
-       - Osservare come i 'count' cambiano nel tempo indica trend emergenti.
-       - Per capire COSA rappresenta un ClusterID, esaminare i suoi contenuti nel grafo Neo4j.
+       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE (TUMBLING WINDOWS):
+       - Verrà stampata una tabella solo quando una finestra temporale (es. 2 min) si chiude e ha dati.
+       - Ogni tabella mostra i conteggi PER QUEL BLOCCO DI TEMPO SPECIFICO.
+       - I 'ClusterID' (da 0 a 4) sono ORDINATI per 'count' DECRESCENTE.
+       - Il ClusterID IN CIMA ALLA LISTA è il TEMA PIU' FREQUENTE in quel blocco.
+       - Per capire COSA rappresenta un ClusterID, esaminare i suoi contenuti in Neo4j.
     ======================================================================
     ```
 
 ## 🕸️ Grafo Neo4j e Abilitazione Raccomandazioni
 
-* **Costruzione e Aggiornamento Grafo:**
-    * **Caricamento Batch Iniziale:** Lo script `neo4j/scripts/graph_builder.py` (eseguito sulla VM `master`) legge l'output CSV del job `analyze_batch.py` (dalla cartella locale `data/output/topics_with_cluster`) e popola inizialmente il database Neo4j (in esecuzione su `bolt://master:7687`).
-    * **Aggiornamento Streaming Real-Time:** Lo script `streaming_job.py`, grazie al **Neo4j Spark Connector**, scrive i risultati (headline, categoria processata, ID cluster) di ogni micro-batch **direttamente e automaticamente su Neo4j** tramite query `MERGE`. Questo mantiene il grafo costantemente aggiornato con le ultime notizie analizzate. Lo script `update_graph.py` non è più necessario.
-* **Esplorazione e Visualizzazione:** Neo4j Browser (accessibile da `http://master:7474` dall'host Windows) permette di navigare ed esplorare visivamente i nodi `:Topic`, `:Category` (con nomi raggruppati), `:Cluster` (ID da 0 a 4), e `:User` (simulati), insieme alle loro relazioni `:BELONGS_TO`, `:CONTAINS`, `:INTERESTED_IN`.
-* **Abilitazione Raccomandazioni:** La struttura relazionale del grafo è la base per implementare diversi tipi di logiche di raccomandazione, la cui potenzialità è dimostrata tramite query Cypher (vedi sezione Query Neo4j Utili).
-
+* **Costruzione/Aggiornamento:**
+    * **Batch:** `neo4j/scripts/graph_builder.py` popola Neo4j da CSV locali del batch.
+    * **Streaming:** `streaming_job.py` (con Neo4j Spark Connector) aggiorna Neo4j direttamente.
+* **Esplorazione:** Neo4j Browser (`http://master:7474`).
+* **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
 ## 📁 Struttura del Progetto
 ```
 TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
@@ -293,7 +291,7 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 │   ├── producer.py          # Invia notizie a Kafka
 │   └── sample_news.jsonl  # Esempio di file per il producer
 │
-├── spark_jobs/
+├── scripts/
 │   ├── analyze_batch.py     # Job Batch: Preprocessing, Embedding, Scaler, PCA, Training KMeans K=5, Salva Modelli/CSV
 │   └── streaming_job.py     # Job Streaming: Legge Kafka, Carica Modelli, Applica Pipeline, Scrive su Neo4j, Monitora Trend
 │
@@ -314,41 +312,57 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 ├── utils/ # Moduli Python condivisi (se si sceglie di usarli per refactoring)
 │   └── category_mapper.py # (Attualmente la logica è duplicata negli script Spark)
 │
-├── scripts/                   # Script di utilità o setup
-│   └── list_categories.py   # Per listare le categorie originali
+├── setup/                   # Script di setup
+│   └── setup_hadoop.sh 
+|   └── setup_spark.sh
+|   └── setup_kafka.sh
 │
-└── README.md                  # Questo file
-## 🚀 Come Eseguire il Progetto (Ordine Finale Consigliato)
+└── README.md                  
 ```
-1.  **Setup Completo:** Verificare che Hadoop (HDFS/YARN), Spark 3.5, Kafka, Neo4j 4.4 (su `master`), Java 11 siano installati, configurati e attivi. Librerie Python (`pandas`, `pyarrow`, `torch`, `sentence-transformers`, `neo4j`, `kafka-python`) installate negli ambienti Python corretti. Dataset JSON originale su HDFS.
+## 🚀 Come Eseguire il Progetto
+
+## 🚀 Come Eseguire il Progetto (Ordine Finale)
+
+1.  **Setup Completo:** Hadoop, YARN, Spark, Kafka, Neo4j (su `master` VM), Java 11, librerie Python. Dataset JSON su HDFS.
 2.  **Esecuzione Analisi Batch (Finale)** (da `master`):
     ```bash
     cd ~/TrendSpotter-Cluster
-    # export PYSPARK_PYTHON=/usr/bin/python3.8 # Se necessario
+    # export PYSPARK_PYTHON=/usr/bin/python3.8 # O Python 3.x corretto
     spark-submit --master yarn spark_jobs/analyze_batch.py
     ```
-    *(Crea/Sovrascrive modelli Scaler, PCA, KMeans K=5 su HDFS e CSV locali in `data/output/`)*
 3.  **Costruzione Grafo Iniziale** (da `master`):
     ```bash
     cd ~/TrendSpotter-Cluster/neo4j/scripts
     # Assicurati che graph_builder.py legga da "../../data/output/topics_with_cluster/part-*.csv"
-    # e che l'URI Neo4j sia "bolt://master:7687"
+    # e URI "bolt://master:7687"
     python graph_builder.py
     ```
 4.  **Avvio Job di Streaming** (da `master`):
     ```bash
     cd ~/TrendSpotter-Cluster
-    # Versione Connettore Neo4j per Spark 3.5 e Scala 2.12/2.13
-    NEO4J_CONNECTOR_VERSION="5.2.0" # Verifica la migliore per la tua build Spark
-    # export PYSPARK_PYTHON=/usr/bin/python3.8 # Se necessario
-    spark-submit --master yarn   --conf spark.pyspark.python=/usr/bin/python3.8   --conf spark.executorEnv.PYTHONPATH=/home/hadoop/.local/lib/python3.8/site-packages   --conf spark.driverEnv.PYTHONPATH=/home/hadoop/.local/lib/python3.8/site-packages   --conf spark.executorEnv.HF_HOME=/home/hadoop/.cache/huggingface --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.neo4j:neo4j-connector-apache-spark_2.12:5.3.6_for_spark_3 streaming_job_final.py 
+    # Es. NEO4J_CONNECTOR_VERSION="5.2.0" (o altra versione compatibile)
+    # Es. KAFKA_PKG_VERSION="3.5.0" (o altra versione compatibile)
+    # Assicurati che PYSPARK_PYTHON e PYTHONPATH siano impostati se non usi un ambiente pacchettizzato
+    # export PYSPARK_PYTHON=/usr/bin/python3.8
+    # USER_SITE_PACKAGES_PATH=$(python3.8 -m site --user-site)
+    # spark-submit --master yarn \
+    #  --conf spark.pyspark.python=${PYTHON_EXEC_PATH} \
+    #  --conf spark.executorEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
+    #  ... (altre conf se necessarie) ...
+    #  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:${KAFKA_PKG_VERSION},org.neo4j.spark:neo4j-connector-apache-spark_2.13:${NEO4J_CONNECTOR_VERSION} \
+    #  spark_jobs/streaming_job.py
 
+    # Comando più semplice se le librerie Python sono ben gestite (es. ambiente pacchettizzato o PYSPARK_PYTHON globale)
+    NEO4J_CONNECTOR_VERSION="5.2.0" # Verifica!
+    spark-submit --master yarn \
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.neo4j.spark:neo4j-connector-apache-spark_2.13:$NEO4J_CONNECTOR_VERSION \
+      spark_jobs/streaming_job.py
     ```
-    *(Lascia in esecuzione. Monitora la console per i trend e Neo4j Browser per gli aggiornamenti del grafo)*
-5.  **Avvio Producer Kafka** (da `master`, in un nuovo terminale):
+    *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
+5.  **Avvio Producer Kafka** (da `master`, nuovo terminale):
     ```bash
     cd ~/TrendSpotter-Cluster/kafka
-    python producer.py # (O la versione che legge da sample_news.jsonl)
+    python producer.py
     ```
 
 ## 📊 Query Neo4j Utili per Dimostrazione
@@ -399,3 +413,8 @@ LIMIT 10;
 // Query 8: Utenti Interessati a Topic nel Cluster (sostituisci 'ID_CLUSTER')
 MATCH (c:Cluster {id: 'ID_CLUSTER'})-[:CONTAINS]->(t:Topic)<-[:INTERESTED_IN]-(u:User)
 RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse, c.id AS ClusterID;
+```
+## ✅ Conclusione e Giustificazione Finale
+TrendSpotter dimostra l'implementazione di una pipeline Big Data end-to-end per l'analisi di trend da flussi testuali. Utilizzando Kafka, Spark, Hadoop e Neo4j, il sistema integra tecniche avanzate di NLP (Sentence Embeddings) e Machine Learning (Scaler, PCA, KMeans K=5) per ottenere cluster tematici significativi (Silhouette ~0.13). L'identificazione dei trend si basa sull'analisi della frequenza di questi cluster (batch) e sulla variazione di frequenza nel tempo (monitorata su console dallo stream Spark con finestre tumbling). Il grafo Neo4j, aggiornato in (near) real-time, abilita la visualizzazione e le raccomandazioni. Il progetto è una valida dimostrazione dell'applicazione dello stack Big Data per l'analisi di trend.
+
+
