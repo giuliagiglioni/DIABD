@@ -27,7 +27,7 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
 
 ## 📦 Dataset Utilizzato
 
-*Dataset Iniziale:** [News Category Dataset (Versione ridotta/modificata)](https://www.kaggle.com/datasets/rmisra/news-category-dataset) - Contiene notizie dal 2012 al 2022. Le colonne principali utilizzate sono:
+* **Dataset Iniziale:** [News Category Dataset](https://www.kaggle.com/datasets/rmisra/news-category-dataset) - Contiene notizie dal 2012 al 2022. Le colonne principali utilizzate sono:
     * `headline`: Titolo della notizia.
     * `short_description`: Breve descrizione.
     * `category`: Categoria editoriale originale.
