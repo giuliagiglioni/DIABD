@@ -183,3 +183,70 @@ MATCH (n) DETACH DELETE n
     Spiegazione: Trova quali utenti (tra quelli simulati) hanno mostrato interesse per i topic che appartengono a un cluster specifico.
 
 Queste 8 query offrono una buona varietà per mostrare cosa puoi fare con il grafo che hai costruito. Spiegano come identificare temi frequenti (Query 2 e 3), come esplorarli (Query 4 e 5), come generare diversi tipi di raccomandazioni (Query 6 e 7) e come collegare gli utenti ai temi (Query 8). Puoi selezionare quelle che ritieni più significative da aggiungere al README o da mostrare durante una presentazione.
+
+
+POSSIBILI DOMANDE-----------------
+Introduzione per il Professore (Concetto Generale):
+"Professore, il progetto TrendSpotter mira a costruire una pipeline Big Data end-to-end per l'identificazione e l'analisi di trend emergenti da flussi di notizie. L'obiettivo è stato dimostrare l'integrazione di tecnologie chiave come Kafka per l'ingestione, Spark (con Spark Streaming e MLlib) per l'elaborazione distribuita e l'analisi, Hadoop (HDFS/YARN) per lo storage e la gestione delle risorse, e Neo4j per la modellazione e visualizzazione di un grafo della conoscenza. Le scelte implementative sono state guidate dalla necessità di processare dati testuali, scoprire temi latenti, monitorare la loro attività nel tempo e abilitare potenziali raccomandazioni."
+
+Area 1: Preprocessing e Gestione del Dataset
+
+    Domanda Ipotetica: "Avete applicato un filtraggio temporale significativo (dati dal 2020 in poi, riducendo da ~220k a ~5.5k record) e un raggruppamento manuale delle categorie (da 42 a 22). Potete motivare queste scelte? Non si rischia di perdere informazioni o robustezza?"
+        Giustificazione:
+            Filtraggio Temporale (>= 2020):
+                Rilevanza per "Trend Emergenti": L'obiettivo è identificare trend attuali. I dati storici (2012-2019) sono meno indicativi dei fenomeni correnti. La focalizzazione sul recente allinea il progetto agli scenari simulati (Google/Twitter Trends).
+                Fattibilità e Performance: L'elaborazione dell'intero dataset, specialmente la generazione di Sentence Embeddings e il clustering su un cluster VM con risorse limitate, sarebbe stata proibitiva in termini di tempo. Il subset recente ha permesso di sviluppare e testare l'intera pipeline (incluso ML avanzato) in tempi ragionevoli.
+                Gestibilità del Grafo: Un dataset mirato produce un grafo Neo4j più snello e interpretabile per la demo.
+                Scalabilità Architetturale: L'architettura Spark/YARN è intrinsecamente scalabile; con più risorse, si potrebbero processare periodi più lunghi o l'intero dataset.
+            Raggruppamento Categorie (da 42 a 22):
+                Chiarezza e Riduzione Rumore: Le 42 categorie originali presentavano sovrapposizioni (es. ARTS, ARTS & CULTURE) e una granularità eccessiva. Questo poteva frammentare l'analisi e rendere difficile l'identificazione di macro-trend.
+                Cluster Più Interpretabili: Un numero minore di categorie semantiche più coerenti aiuta il clustering a trovare gruppi tematici potenzialmente più distinti e facilita l'interpretazione del contenuto dei cluster.
+                Grafo Semplificato: Meno nodi :Category e relazioni associate rendono il grafo Neo4j più leggibile.
+                Processo: Il raggruppamento è stato fatto manualmente, basandosi sulla semantica delle categorie originali, per creare gruppi logici e significativi per il dominio delle notizie.
+
+Area 2: Approccio al Clustering e Scelta dei Parametri
+
+    Domanda Ipotetica: "Perché avete scelto il clustering per identificare i trend? E come siete arrivati alla pipeline finale con Sentence Embeddings, PCA e un certo numero K di cluster (es. K=5 o K=13, a seconda della vostra scelta finale)?"
+        Giustificazione:
+            Perché Clustering?: Per l'obiettivo di identificare argomenti/trend senza etichette predefinite per ogni possibile tema emergente, il clustering non supervisionato è un approccio standard. Permette di scoprire temi latenti basati sulla similarità del contenuto testuale.
+            Evoluzione (da TF-IDF a Embeddings): Inizialmente è stato tentato un approccio classico con TF-IDF e KMeans, ma i risultati (bassi Silhouette Score) indicavano una scarsa separazione dei cluster, dovuta ai limiti di TF-IDF nel catturare la semantica profonda. Per superare questo, siamo passati ai Sentence Embeddings (con all-mpnet-base-v2), che forniscono una rappresentazione vettoriale molto più ricca del significato del testo.
+            Pipeline di Preprocessing delle Feature: Agli embedding sono stati applicati StandardScaler (per normalizzare le feature) e PCA (per ridurre la dimensionalità a 40 componenti), tecniche standard per migliorare la performance di KMeans su vettori ad alta dimensione, riducendo il rumore e la complessità computazionale.
+            Scelta di K (Numero di Cluster): Il numero finale di cluster K (es. 5 o 13, a seconda di quale ha dato i risultati migliori e più interpretabili nei vostri test finali) è stato determinato sperimentalmente. Abbiamo eseguito test con un range di valori di K, valutando sia il Silhouette Score (che con gli embedding e PCA è migliorato significativamente, es. ~0.135) sia, soprattutto, l'analisi qualitativa del contenuto dei cluster. Il K scelto rappresenta un compromesso tra una metrica quantitativa accettabile e la capacità di assegnare un tema coerente e interpretabile a ciascun cluster.
+            Concetto di "Modello" KMeans: Anche se KMeans è non supervisionato, la fase di .fit() "addestra" il modello calcolando le posizioni ottimali dei centroidi dei cluster. Questo "modello" (i centroidi) viene poi salvato e riutilizzato per assegnare nuove notizie (dallo stream) ai cluster esistenti in modo consistente.
+
+Area 3: Scelta delle Tecnologie dello Stack
+
+    Domanda Ipotetica: "Potete giustificare la scelta di Neo4j rispetto ad altri database NoSQL? E chiarire il ruolo di Hadoop, YARN e Spark nel vostro progetto, inclusa la presenza concettuale di MapReduce?"
+        Giustificazione:
+            Neo4j (Graph Database):
+                Centralità delle Relazioni: TrendSpotter si basa sulla comprensione delle connessioni tra notizie (Topic), temi (Cluster), categorie editoriali e utenti. Neo4j modella queste relazioni in modo nativo ed efficiente.
+                Querying (Cypher): Cypher permette di interrogare queste relazioni complesse (es. per raccomandazioni, analisi di influenza) in modo intuitivo e performante, cosa difficile con altri NoSQL.
+                Visualizzazione: Neo4j Browser è cruciale per l'esplorazione visiva dei trend e delle loro interconnessioni, un obiettivo chiave.
+            Kafka: Usato per l'ingestione affidabile e scalabile di flussi di dati in tempo reale, disaccoppiando le fonti dall'elaborazione Spark.
+            Hadoop HDFS: Fornisce lo storage distribuito e fault-tolerant per il dataset originale, per i modelli ML addestrati (Scaler, PCA, KMeans) e per i checkpoint di Spark Streaming, essenziali per la resilienza.
+            Hadoop YARN: È il gestore delle risorse del cluster. Permette a Spark di operare in modo distribuito, allocando CPU e memoria sulle VM per l'esecuzione parallela dei task.
+            Spark: È il motore di elaborazione distribuita per:
+                Batch Processing (analyze_batch.py): Preprocessing dei dati storici, addestramento dei modelli ML (embedding, scaler, PCA, KMeans).
+                Stream Processing (streaming_job.py): Elaborazione near real-time dei dati da Kafka, applicazione dei modelli ML pre-addestrati, aggiornamento diretto di Neo4j (tramite connettore), e analisi dei trend su finestre temporali.
+            Concetto di MapReduce in Spark: Non abbiamo scritto codice MapReduce tradizionale. Tuttavia, Spark, per eseguire le operazioni distribuite sui DataFrame (come groupBy, count, UDF su partizioni, addestramento ML), internamente scompone il lavoro in stadi e task che seguono i principi di Map (applicare una funzione a molti dati in parallelo) e Reduce (aggregare risultati), spesso con fasi di Shuffle gestite efficientemente da Spark su YARN. Il servizio mapreduce_shuffle in YARN supporta queste operazioni.
+
+Area 4: Architettura del Cluster e Distribuzione del Lavoro
+
+    Domanda Ipotetica: "Avete 3 VM. Come verificate che il lavoro Spark sia effettivamente distribuito? Perché a volte i job potrebbero non usare tutti i nodi worker disponibili?"
+        Giustificazione:
+            Verifica Distribuzione: Utilizziamo la YARN UI (http://master:8088) per vedere l'allocazione dei container Spark sugli host (master, worker1, worker2) e la Spark UI (http://master:4040) per monitorare gli executor attivi, i task in esecuzione e la loro distribuzione sui nodi. La tab "Stages" della Spark UI mostra come un'operazione (es. generazione embedding) venga divisa in numerosi task paralleli eseguiti su più executor.
+            Perché Non Sempre Tutti i Nodi?:
+                Quantità di Lavoro: Se il numero di partizioni dei dati o di task in uno stadio è piccolo, Spark potrebbe non aver bisogno di utilizzare tutti i core di tutti gli executor disponibili.
+                Allocazione Dinamica: Se attiva, Spark può rilasciare executor inattivi.
+                Disponibilità Risorse YARN: YARN alloca container in base alla disponibilità momentanea sui nodi.
+                Località Dati: Spark preferisce eseguire task sui nodi dove i dati HDFS risiedono.
+                Questo è un comportamento normale: Spark e YARN cercano di usare le risorse in modo efficiente, non necessariamente di saturare sempre tutti i nodi se non è richiesto dal carico.
+
+Area 5: Funzionalità "TrendSpotter" (Come Vengono Identificati i Trend)
+
+    Domanda Ipotetica: "Come identificate specificamente un trend 'emergente' e non solo un argomento frequente?"
+        Giustificazione:
+            Base: I cluster K=5 [o K=13] identificati rappresentano i temi principali nei dati recenti (post-2020).
+            Identificazione Frequenza (Batch): La dimensione di questi cluster nel job batch indica la dominanza di un tema in quel periodo.
+            Monitoraggio Emergenza (Streaming): L'aspetto "emergente" è indirizzato dallo streaming_job.py tramite l'analisi dei conteggi dei cluster su finestre temporali (tumbling windows), i cui risultati vengono stampati sulla console. Osservando la variazione della frequenza (colonna count) di un ClusterID specifico attraverso le finestre temporali successive, possiamo identificare un tema la cui attività sta aumentando significativamente o che mostra picchi improvvisi. Questo aumento di attività nel tempo è il nostro indicatore di trend emergente. L'analisi qualitativa del contenuto del cluster (tramite Neo4j) ne chiarisce poi il significato.
+
