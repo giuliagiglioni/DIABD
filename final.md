@@ -100,7 +100,7 @@ L'installazione dei componenti principali è facilitata da script di setup.
 
 L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestite tramite i seguenti script:
 
-*`setup_hadoop.sh`**
+* `setup_hadoop.sh`**
     * **Dove eseguire:** Solo sul nodo `master`.
     * **Quando:** Dopo la configurazione base della VM master.
     * **Scopo:** Installa Hadoop in `~/hadoop`, crea directory per NameNode/DataNode, imposta variabili ambiente (`JAVA_HOME` per Java 11, `HADOOP_HOME`, `PATH`) in `~/.bashrc`, e pre-configura i file XML essenziali.
@@ -186,7 +186,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 
 ### 5. Installazione Apache Spark 
 
-*`setup_spark.sh`**
+* `setup_spark.sh`**
     * **Dove eseguire:** Su **tutti e 3 i nodi** (`master`, `worker1`, `worker2`).
     * **Quando:** Dopo `setup_hadoop.sh` e la copia/configurazione di Hadoop sui worker.
     * **Scopo:** Installa Apache Spark (es. 3.5.0), configura `spark-env.sh` e il file `workers`, imposta variabili ambiente (`SPARK_HOME`, `PATH`).
@@ -208,7 +208,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 
 ### 6. Installazione Apache Kafka (su Master)
 
-*`setup_kafka.sh`**
+* `setup_kafka.sh`**
     * **Dove eseguire:** Solo sul nodo `master`.
     * **Quando:** Dopo aver configurato Spark.
     * **Scopo:** Scarica/installa Kafka (es. 3.6.0) e ZooKeeper (incluso), imposta variabili ambiente (`KAFKA_HOME`, `PATH`).
