@@ -270,7 +270,8 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Esplorazione e Visualizzazione:** Neo4j Browser (accessibile da `http://master:7474` dall'host Windows) permette di navigare ed esplorare visivamente i nodi `:Topic`, `:Category` (con nomi raggruppati), `:Cluster` (ID da 0 a 4), e `:User` (simulati), insieme alle loro relazioni `:BELONGS_TO`, `:CONTAINS`, `:INTERESTED_IN`.
 * **Abilitazione Raccomandazioni:** La struttura relazionale del grafo è la base per implementare diversi tipi di logiche di raccomandazione, la cui potenzialità è dimostrata tramite query Cypher (vedi sezione Query Neo4j Utili).
 
-## 📁 Struttura del Progetto (Finale)
+## 📁 Struttura del Progetto
+```
 TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 │
 ├── kafka/
@@ -303,7 +304,7 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 │
 └── README.md                  # Questo file
 ## 🚀 Come Eseguire il Progetto (Ordine Finale Consigliato)
-
+```
 1.  **Setup Completo:** Verificare che Hadoop (HDFS/YARN), Spark 3.5, Kafka, Neo4j 4.4 (su `master`), Java 11 siano installati, configurati e attivi. Librerie Python (`pandas`, `pyarrow`, `torch`, `sentence-transformers`, `neo4j`, `kafka-python`) installate negli ambienti Python corretti. Dataset JSON originale su HDFS.
 2.  **Esecuzione Analisi Batch (Finale)** (da `master`):
     ```bash
