@@ -78,9 +78,6 @@ L'installazione dei componenti principali è facilitata da script di setup.
         enp0s8: # Adattare al nome della scheda Rete Interna
           dhcp4: no
           addresses: [192.168.56.10/24]
-          # Gateway e DNS non necessari sulla rete interna se si usa NAT per internet
-          # nameservers:
-          #   addresses: [8.8.8.8, 1.1.1.1]
     ```
     *(Adattare l'IP per worker1 e worker2 e rieseguire `sudo netplan apply`)*
 
@@ -98,8 +95,6 @@ L'installazione dei componenti principali è facilitata da script di setup.
     ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
-    # Copiare id_rsa.pub di master su authorized_keys dei worker e viceversa se necessario
-    # Verificare con ssh worker1, ssh worker2, ssh master, ssh localhost
     ```
 ### 4. Script di Setup (da eseguire come utente `hadoop`)
 
