@@ -16,7 +16,7 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
 
 | Tecnologia                 | Scopo Principale nel Progetto                                                                                                | Versione (Indicativa) |
 | :------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
-| **Apache Kafka** | Ingestione e buffering di flussi di notizie simulate in tempo reale (topic configurabile, es. `news_final_test`).                  | 3.6.0                 |
+| **Apache Kafka** | Ingestione e buffering di flussi di notizie simulate in tempo reale.                  | 3.6.0                 |
 | **Apache Spark** | Elaborazione distribuita batch e streaming; generazione Sentence Embeddings (`all-mpnet-base-v2`); preprocessing feature (Scaler, PCA); clustering (KMeans K=5); analisi trend su finestre tumbling. | 3.5.0                 |
 | **Apache Hadoop** | Archiviazione distribuita (HDFS per dataset, modelli ML, checkpoints); gestione risorse cluster (YARN).                          | 3.2.4                 |
 | **Neo4j Community Edition**| Modellazione, persistenza (su VM `master`) e visualizzazione del grafo della conoscenza.                                       | 4.4.x                 |
@@ -27,8 +27,16 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
 
 ## 📦 Dataset Utilizzato
 
-* **Dataset Iniziale:** `News_Category_Dataset_v3.json`, caricato su HDFS (es. `hdfs:///user/hadoop/news/`). Si utilizzano le colonne: `headline`, `short_description`, `category`, `date`.
-* **Dati di Streaming (Simulati):** Messaggi JSON inviati da `kafka/producer.py` (o versione che legge da file) al topic Kafka configurato, contenenti `headline`, `short_description` e `category` (originale).
+*Dataset Iniziale:** [News Category Dataset (Versione ridotta/modificata)](https://www.kaggle.com/datasets/rmisra/news-category-dataset) - Contiene notizie dal 2012 al 2022. Le colonne principali utilizzate sono:
+    * `headline`: Titolo della notizia.
+    * `short_description`: Breve descrizione.
+    * `category`: Categoria editoriale originale.
+    * `date`: Data di pubblicazione (formato `YYYY-MM-DD`).
+* **Dati di Streaming (Simulati):** Il producer Kafka invia messaggi JSON con `headline` e `category`.
+    ```json
+   {"headline": "Titolo Notizia 1", "category": "NOME_CATEGORIA_1", "short_description": "Descrizione breve..."}
+   {"headline": "Titolo Notizia 2", "category": "NOME_CATEGORIA_2", "short_description": "Altra descrizione..."}   
+    ```
 
 ## 🛠️ Setup Architettura e Installazione
 
