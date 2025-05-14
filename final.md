@@ -2,23 +2,17 @@
 ## 📖 Indice
 
 * [🚀 Introduzione](#-introduzione)
-    * [🎯 Obiettivi Principali](#-obiettivi-principali)
 * [🧰 Stack Tecnologico](#-stack-tecnologico)
 * [📦 Dataset Utilizzato](#-dataset-utilizzato)
 * [📁 Struttura del Progetto](#-struttura-del-progetto)
 * [🛠️ Setup Architettura e Installazione](#️-setup-architettura-e-installazione)
-    * [1. Prerequisiti Comuni alle VM](#1-prerequisiti-comuni-alle-vm)
-    * [2. Configurazione Rete e Host](#2-configurazione-rete-e-host)
-    * [3. Script di Setup](#3-script-di-setup)
-    * [4. Installazione Neo4j (su VM `master`)](#4-installazione-neo4j-su-vm-master)
-    * [5. Librerie Python](#5-librerie-python)
 * [🧪 Preprocessing Dati Applicato (in Batch e Stream)](#-preprocessing-dati-applicato-in-batch-e-stream)
 * [✨ Pipeline ML Avanzata e Clustering (Batch e Stream)](#-pipeline-ml-avanzata-e-clustering-batch-e-stream)
 * [📈 Identificazione e Monitoraggio dei Trend](#-identificazione-e-monitoraggio-dei-trend)
 * [🕸️ Grafo Neo4j e Abilitazione Raccomandazioni](#️-grafo-neo4j-e-abilitazione-raccomandazioni)
 * [🚀 Come Eseguire il Progetto (Ordine Finale)](#-come-eseguire-il-progetto-ordine-finale)
 * [📊 Query Neo4j Utili per Dimostrazione](#-query-neo4j-utili-per-dimostrazione)
-* [✅ Conclusione e Giustificazione Finale](#-conclusione-e-giustificazione-finale)
+* [✅ Conclusioni](#-conclusioni)
 
 ## 🚀 Introduzione
 
@@ -298,7 +292,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 * Scaricare il dataset (`News_Category_Dataset_v3.json`) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
 * Installare le librerie Python necessarie (`pip install pyspark neo4j kafka-python pandas` - `pyspark` spesso non serve installarlo a mano se si usa `spark-submit` che lo include) nell'ambiente Python usato da Spark e dagli script locali.
 
-## 🧪 Preprocessing dei Dati (Applicato in Batch e Stream)
+## 🧪 Preprocessing dei Dati (in Batch e Stream)
 
 Per migliorare la qualità e la rilevanza dell'analisi, sono stati implementati i seguenti passi di preprocessing:
 
@@ -437,7 +431,7 @@ LIMIT 10;
 MATCH (c:Cluster {id: 'ID_CLUSTER'})-[:CONTAINS]->(t:Topic)<-[:INTERESTED_IN]-(u:User)
 RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse, c.id AS ClusterID;
 ```
-## ✅ Conclusione e Giustificazione Finale
+## ✅ Conclusioni
 TrendSpotter dimostra l'implementazione di una pipeline Big Data end-to-end per l'analisi di trend da flussi testuali. Utilizzando Kafka, Spark, Hadoop e Neo4j, il sistema integra tecniche avanzate di NLP (Sentence Embeddings) e Machine Learning (Scaler, PCA, KMeans K=5) per ottenere cluster tematici significativi (Silhouette ~0.13). L'identificazione dei trend si basa sull'analisi della frequenza di questi cluster (batch) e sulla variazione di frequenza nel tempo (monitorata su console dallo stream Spark con finestre tumbling). Il grafo Neo4j, aggiornato in (near) real-time, abilita la visualizzazione e le raccomandazioni. Il progetto è una valida dimostrazione dell'applicazione dello stack Big Data per l'analisi di trend.
 
 
