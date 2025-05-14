@@ -10,7 +10,7 @@
 * [✨ Pipeline ML Avanzata e Clustering (Batch e Stream)](#-pipeline-ml-avanzata-e-clustering-batch-e-stream)
 * [📈 Identificazione e Monitoraggio dei Trend](#-identificazione-e-monitoraggio-dei-trend)
 * [🕸️ Grafo Neo4j e Abilitazione Raccomandazioni](#️-grafo-neo4j-e-abilitazione-raccomandazioni)
-* [🚀 Come Eseguire](#-come-eseguire)
+* [🚀 Come Eseguire il Progetto](#-come-eseguire-il-progetto)
 * [📊 Query Neo4j Utilizzate](#-query-neo4j-utilizzate)
 * [✅ Conclusioni](#-conclusioni)
 
@@ -282,9 +282,47 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 * Impostare password utente `neo4j` a `progetto24` tramite `cypher-shell`.
 * Verificare accesso a Neo4j Browser da host Windows: `http://master_ip:7474`.
 
-### 8. Librerie Python
+### 8. Gestione Ambiente Python per Spark con Conda (Raccomandato)
 
-* Installare le librerie Python necessarie (`pandas`, `numpy`, `pyarrow`, `sentence-transformers`, `torch`, `neo4j`, `kafka-python`) nell'ambiente Python (Java 11 compatibile) usato da Spark su tutti i nodi (master e worker) e sull'ambiente del master per gli script Python locali. La soluzione più robusta per Spark è pacchettizzare un ambiente Conda e distribuirlo con `--archives`.
+Per garantire che gli script PySpark (`analyze_batch.py` e `streaming_job.py`) abbiano accesso a tutte le librerie Python necessarie (come `pandas`, `pyarrow`, `torch`, `sentence-transformers`, `neo4j`, `kafka-python`) in modo consistente su tutti i nodi del cluster YARN, si raccomanda di creare un ambiente Conda dedicato, pacchettizzarlo e distribuirlo.
+
+**Passaggi Principali (da eseguire sul nodo `master`):**
+
+1.  **Installare Miniconda/Anaconda** (se non già presente).
+2.  **Creare un ambiente Conda:**
+    ```bash
+    conda create -n trendspotter_env python=3.8 -y 
+    conda activate trendspotter_env
+    ```
+3.  **Installare le Dipendenze:**
+    * Installare prima le librerie complesse con `conda` per una migliore gestione delle dipendenze binarie:
+        ```bash
+        # (trendspotter_env) $
+        conda install pandas pyarrow pytorch cpuonly -c pytorch -y
+        ```
+    * Poi, se si dispone di un file `requirements.txt` da un precedente ambiente `venv`, è possibile usarlo per installare le restanti librerie (assicurarsi che `pyspark` sia incluso se non fornito globalmente in modo affidabile):
+        ```bash
+        # (trendspotter_env) $
+        pip install -r /percorso/del/tuo/requirements.txt 
+        # Assicurarsi che pyspark, sentence-transformers, neo4j, kafka-python siano inclusi
+        # Esempio: pip install pyspark sentence-transformers neo4j kafka-python
+        ```
+4.  **Installare `conda-pack`** (nell'ambiente `base` di Conda, se non già fatto):
+    ```bash
+    conda deactivate
+    pip install conda-pack 
+    ```
+5.  **Pacchettizzare l'Ambiente:**
+    ```bash
+    conda pack -n trendspotter_env -o trendspotter_env.tar.gz --ignore-missing-files
+    ```
+6.  **Caricare l'Archivio su HDFS:**
+    ```bash
+    hdfs dfs -mkdir -p /user/hadoop/envs
+    hdfs dfs -put -f trendspotter_env.tar.gz /user/hadoop/envs/
+    ```
+
+L'utilizzo di questo ambiente pacchettizzato viene poi specificato nel comando `spark-submit`, come mostrato nella sezione [Come Eseguire il Progetto](#-come-eseguire-il-progetto).
 
 ### 9. Preparazione Codice Progetto e Dati
 
