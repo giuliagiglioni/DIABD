@@ -376,44 +376,45 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Esplorazione:** Neo4j Browser (`http://master:7474`).
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
 
-## 🚀 Come Eseguire
-1.  **Setup Completo:** Hadoop, YARN, Spark, Kafka, Neo4j (su `master` VM), Java 11, librerie Python. Dataset JSON su HDFS.
-2.  **Esecuzione Analisi Batch (Finale)** (da `master`):
-    ```bash
-    cd ~/TrendSpotter-Cluster
-    # export PYSPARK_PYTHON=/usr/bin/python3.8 # O Python 3.x corretto
-    spark-submit --master yarn spark_jobs/analyze_batch.py
-    ```
-3.  **Costruzione Grafo Iniziale** (da `master`):
+## 🚀 Come Eseguire il Progetto
+1.  **Esecuzione Analisi Batch** (da `master`):
+ ```bash
+# Assicurati che l'archivio Conda sia su HDFS come descritto nella sezione Setup.
+# La variabile PYSPARK_PYTHON dice a Spark quale Python usare DENTRO l'ambiente scompattato.
+export PYSPARK_PYTHON=./TRENDSPOTTER_ENV_PACK/bin/python3.8
+
+spark-submit --master yarn \
+  --name TrendSpotter_BatchAnalysis \
+  --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=${PYSPARK_PYTHON} \
+  --archives hdfs:///user/hadoop/envs/trendspotter_env.tar.gz#TRENDSPOTTER_ENV_PACK \
+  spark_jobs/analyze_batch.py
+ ```
+2.  **Costruzione Grafo Iniziale** (da `master`):
     ```bash
     cd ~/TrendSpotter-Cluster/neo4j/scripts
     # Assicurati che graph_builder.py legga da "../../data/output/topics_with_cluster/part-*.csv"
     # e URI "bolt://master:7687"
     python graph_builder.py
     ```
-4.  **Avvio Job di Streaming** (da `master`):
+3.  **Avvio Job di Streaming** (da `master`):
     ```bash
-    cd ~/TrendSpotter-Cluster
-    # Es. NEO4J_CONNECTOR_VERSION="5.2.0" (o altra versione compatibile)
-    # Es. KAFKA_PKG_VERSION="3.5.0" (o altra versione compatibile)
-    # Assicurati che PYSPARK_PYTHON e PYTHONPATH siano impostati se non usi un ambiente pacchettizzato
-    # export PYSPARK_PYTHON=/usr/bin/python3.8
-    # USER_SITE_PACKAGES_PATH=$(python3.8 -m site --user-site)
-    # spark-submit --master yarn \
-    #  --conf spark.pyspark.python=${PYTHON_EXEC_PATH} \
-    #  --conf spark.executorEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
-    #  ... (altre conf se necessarie) ...
-    #  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:${KAFKA_PKG_VERSION},org.neo4j.spark:neo4j-connector-apache-spark_2.13:${NEO4J_CONNECTOR_VERSION} \
-    #  spark_jobs/streaming_job.py
 
-    # Comando più semplice se le librerie Python sono ben gestite (es. ambiente pacchettizzato o PYSPARK_PYTHON globale)
-    NEO4J_CONNECTOR_VERSION="5.2.0" # Verifica!
-    spark-submit --master yarn \
-      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.neo4j.spark:neo4j-connector-apache-spark_2.13:$NEO4J_CONNECTOR_VERSION \
-      spark_jobs/streaming_job.py
+      # Assicurati che l'archivio Conda sia su HDFS e che Kafka sia attivo.
+      # La variabile PYSPARK_PYTHON dice a Spark quale Python usare DENTRO l'ambiente scompattato.
+      export PYSPARK_PYTHON=./TRENDSPOTTER_ENV_PACK/bin/python3.8
+    
+      KAFKA_SPARK_PKG="org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0"
+      NEO4J_SPARK_PKG="org.neo4j.spark:neo4j-connector-apache-spark_2.13:5.2.0" # O versione più recente compatibile
+    
+      spark-submit --master yarn \
+     --name TrendSpotter_Streaming \
+     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=${PYSPARK_PYTHON} \
+     --archives hdfs:///user/hadoop/envs/trendspotter_env.tar.gz#TRENDSPOTTER_ENV_PACK \
+     --packages <span class="math-inline">\{KAFKA\_SPARK\_PKG\},</span>{NEO4J_SPARK_PKG} \
+     spark_jobs/streaming_job.py
     ```
     *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
-5.  **Avvio Producer Kafka** (da `master`, nuovo terminale):
+4.  **Avvio Producer Kafka** (da `master`, nuovo terminale):
     ```bash
     cd ~/TrendSpotter-Cluster/kafka
     python producer.py
