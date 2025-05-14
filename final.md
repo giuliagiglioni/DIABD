@@ -6,12 +6,12 @@
 * [📦 Dataset Utilizzato](#-dataset-utilizzato)
 * [📁 Struttura del Progetto](#-struttura-del-progetto)
 * [🛠️ Setup Architettura e Installazione](#️-setup-architettura-e-installazione)
-* [🧪 Preprocessing Dati Applicato (in Batch e Stream)](#-preprocessing-dati-applicato-in-batch-e-stream)
+* [🧪 Preprocessing Dati (in Batch e Stream)](#-preprocessing-dati-in-batch-e-stream)
 * [✨ Pipeline ML Avanzata e Clustering (Batch e Stream)](#-pipeline-ml-avanzata-e-clustering-batch-e-stream)
 * [📈 Identificazione e Monitoraggio dei Trend](#-identificazione-e-monitoraggio-dei-trend)
 * [🕸️ Grafo Neo4j e Abilitazione Raccomandazioni](#️-grafo-neo4j-e-abilitazione-raccomandazioni)
-* [🚀 Come Eseguire il Progetto (Ordine Finale)](#-come-eseguire-il-progetto-ordine-finale)
-* [📊 Query Neo4j Utili per Dimostrazione](#-query-neo4j-utili-per-dimostrazione)
+* [🚀 Come Eseguire](#-come-eseguire)
+* [📊 Query Neo4j Utilizzate](#-query-neo4j-utilizzate)
 * [✅ Conclusioni](#-conclusioni)
 
 ## 🚀 Introduzione
@@ -292,7 +292,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 * Scaricare il dataset (`News_Category_Dataset_v3.json`) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
 * Installare le librerie Python necessarie (`pip install pyspark neo4j kafka-python pandas` - `pyspark` spesso non serve installarlo a mano se si usa `spark-submit` che lo include) nell'ambiente Python usato da Spark e dagli script locali.
 
-## 🧪 Preprocessing dei Dati (in Batch e Stream)
+## 🧪 Preprocessing Dati (in Batch e Stream)
 
 Per migliorare la qualità e la rilevanza dell'analisi, sono stati implementati i seguenti passi di preprocessing:
 
@@ -338,8 +338,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Esplorazione:** Neo4j Browser (`http://master:7474`).
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
 
-## 🚀 Come Eseguire il Progetto
-
+## 🚀 Come Eseguire
 1.  **Setup Completo:** Hadoop, YARN, Spark, Kafka, Neo4j (su `master` VM), Java 11, librerie Python. Dataset JSON su HDFS.
 2.  **Esecuzione Analisi Batch (Finale)** (da `master`):
     ```bash
@@ -382,7 +381,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     python producer.py
     ```
 
-## 📊 Query Neo4j Utili per Dimostrazione
+## 📊 Query Neo4j Utilizzate
 
 ```cypher
 // Query 1: Statistiche Generali del Grafo
