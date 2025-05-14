@@ -359,12 +359,14 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
     ```
     ======================================================================
-       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE (TUMBLING WINDOWS):
-       - Verrà stampata una tabella solo quando una finestra temporale (es. 2 min) si chiude e ha dati.
-       - Ogni tabella mostra i conteggi PER QUEL BLOCCO DI TEMPO SPECIFICO.
-       - I 'ClusterID' (da 0 a 4) sono ORDINATI per 'count' DECRESCENTE.
-       - Il ClusterID IN CIMA ALLA LISTA è il TEMA PIU' FREQUENTE in quel blocco.
-       - Per capire COSA rappresenta un ClusterID, esaminare i suoi contenuti in Neo4j.
+       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
+       - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
+         (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
+       - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
+       - La tabella elencherà i 'ClusterID' (da 0 a 4, se K=5) attivi in quella finestra
+         e il loro 'count' (numero di notizie).
+       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
+         nel grafo Neo4j usando la query Cypher appropriata.
     ======================================================================
     ```
 
@@ -410,7 +412,6 @@ spark-submit --master yarn \
      --name TrendSpotter_Streaming \
      --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=${PYSPARK_PYTHON} \
      --archives hdfs:///user/hadoop/envs/trendspotter_env.tar.gz#TRENDSPOTTER_ENV_PACK \
-     --packages <span class="math-inline">\{KAFKA\_SPARK\_PKG\},</span>{NEO4J_SPARK_PKG} \
      spark_jobs/streaming_job.py
     ```
     *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
