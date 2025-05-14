@@ -381,6 +381,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 ## 🚀 Come Eseguire il Progetto
 1.  **Esecuzione Analisi Batch** (da `master`):
  ```bash
+cd ~/TrendSpotter-Cluster
 # Assicurati che l'archivio Conda sia su HDFS come descritto nella sezione Setup.
 # La variabile PYSPARK_PYTHON dice a Spark quale Python usare DENTRO l'ambiente scompattato.
 export PYSPARK_PYTHON=./TRENDSPOTTER_ENV_PACK/bin/python3.8
@@ -389,7 +390,7 @@ spark-submit --master yarn \
   --name TrendSpotter_BatchAnalysis \
   --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=${PYSPARK_PYTHON} \
   --archives hdfs:///user/hadoop/envs/trendspotter_env.tar.gz#TRENDSPOTTER_ENV_PACK \
-  spark_jobs/analyze_batch.py
+  scripts/analyze_batch.py
  ```
 2.  **Costruzione Grafo Iniziale** (da `master`):
     ```bash
@@ -400,7 +401,7 @@ spark-submit --master yarn \
     ```
 3.  **Avvio Job di Streaming** (da `master`):
     ```bash
-
+      cd ~/TrendSpotter-Cluster
       # Assicurati che l'archivio Conda sia su HDFS e che Kafka sia attivo.
       # La variabile PYSPARK_PYTHON dice a Spark quale Python usare DENTRO l'ambiente scompattato.
       export PYSPARK_PYTHON=./TRENDSPOTTER_ENV_PACK/bin/python3.8
@@ -412,7 +413,7 @@ spark-submit --master yarn \
      --name TrendSpotter_Streaming \
      --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=${PYSPARK_PYTHON} \
      --archives hdfs:///user/hadoop/envs/trendspotter_env.tar.gz#TRENDSPOTTER_ENV_PACK \
-     spark_jobs/streaming_job.py
+     scripts/streaming_job.py
     ```
     *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
 4.  **Avvio Producer Kafka** (da `master`, nuovo terminale):
