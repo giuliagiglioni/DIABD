@@ -1,4 +1,24 @@
 # 🧠 TrendSpotter: Analisi e Abilitazione di Raccomandazioni da Trend Emergenti su Flussi di Dati
+## 📖 Indice
+
+* [🚀 Introduzione](#-introduzione)
+    * [🎯 Obiettivi Principali](#-obiettivi-principali)
+* [🧰 Stack Tecnologico](#-stack-tecnologico)
+* [📦 Dataset Utilizzato](#-dataset-utilizzato)
+* [📁 Struttura del Progetto](#-struttura-del-progetto)
+* [🛠️ Setup Architettura e Installazione](#️-setup-architettura-e-installazione)
+    * [1. Prerequisiti Comuni alle VM](#1-prerequisiti-comuni-alle-vm)
+    * [2. Configurazione Rete e Host](#2-configurazione-rete-e-host)
+    * [3. Script di Setup](#3-script-di-setup)
+    * [4. Installazione Neo4j 4.4 (su VM `master`)](#4-installazione-neo4j-44-su-vm-master)
+    * [5. Librerie Python e Dati Iniziali](#5-librerie-python-e-dati-iniziali)
+* [🧪 Preprocessing Dati Applicato (in Batch e Stream)](#-preprocessing-dati-applicato-in-batch-e-stream)
+* [✨ Pipeline ML Avanzata e Clustering (Batch e Stream)](#-pipeline-ml-avanzata-e-clustering-batch-e-stream)
+* [📈 Identificazione e Monitoraggio dei Trend](#-identificazione-e-monitoraggio-dei-trend)
+* [🕸️ Grafo Neo4j e Abilitazione Raccomandazioni](#️-grafo-neo4j-e-abilitazione-raccomandazioni)
+* [🚀 Come Eseguire il Progetto (Ordine Finale)](#-come-eseguire-il-progetto-ordine-finale)
+* [📊 Query Neo4j Utili per Dimostrazione](#-query-neo4j-utili-per-dimostrazione)
+* [✅ Conclusione e Giustificazione Finale](#-conclusione-e-giustificazione-finale)
 
 ## 🚀 Introduzione
 
@@ -6,7 +26,7 @@
 
 Questo progetto non si limita a processare dati, ma mira a creare una struttura dati relazionale che può servire come fondamenta per sistemi di suggerimento, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
 
-### 🎯 Obiettivi Principali Raggiunti
+### 🎯 Obiettivi Principali
 
 1.  **Identificare e Monitorare Trend:** Il sistema individua i **temi** (argomenti) più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (configurato per **K=5** cluster). L'attività di questi temi viene poi **monitorata nel tempo** grazie all'analisi del flusso streaming con **finestre temporali non sovrapposte (tumbling windows)**, i cui risultati aggregati (conteggi per cluster) vengono visualizzati sulla console con `outputMode("update")` per una chiara interpretazione sequenziale.
 2.  **Abilitare Raccomandazioni Personalizzate (tramite Grafo):** È stata costruita una ricca **struttura a grafo in Neo4j** che modella le relazioni tra utenti (simulati), notizie/topic (con `headline` e `short_description`), i 5 cluster tematici a cui appartengono e le loro categorie editoriali (raggruppate). Questa struttura **abilita la generazione di diverse tipologie di raccomandazioni personalizzate**, la cui potenzialità è **dimostrata tramite query Cypher esemplificative**, senza l'implementazione di algoritmi di Machine Learning specifici per la raccomandazione (come ALS) all'interno di Spark.
@@ -37,6 +57,42 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
    {"headline": "Titolo Notizia 1", "category": "NOME_CATEGORIA_1", "short_description": "Descrizione breve..."}
    {"headline": "Titolo Notizia 2", "category": "NOME_CATEGORIA_2", "short_description": "Altra descrizione..."}   
     ```
+## 📁 Struttura del Progetto
+```
+TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
+│
+├── kafka/
+│   ├── producer.py          # Invia notizie a Kafka
+│   └── sample_news.jsonl  # Esempio di file per il producer
+│
+├── scripts/
+│   ├── analyze_batch.py     # Job Batch: Preprocessing, Embedding, Scaler, PCA, Training KMeans K=5, Salva Modelli/CSV
+│   └── streaming_job.py     # Job Streaming: Legge Kafka, Carica Modelli, Applica Pipeline, Scrive su Neo4j, Monitora Trend
+│
+├── neo4j/
+│   └── scripts/
+│       └── graph_builder.py   # Per caricamento batch iniziale da CSV (eseguito su master)
+│
+├── models/ (SU HDFS!)         # Percorso: hdfs:///user/hadoop/models/
+│   ├── scaler_model_all_mpnet_base_v2/
+│   ├── pca_model_all_mpnet_base_v2_k40/
+│   └── kmeans_embedding_all_mpnet_base_v2_k5_scaled_pca40/ # Modello per K=5
+│
+├── data/                      # Dati locali sulla VM master
+│   └── output/                # Output CSV del job batch (con K=5)
+│       ├── topics_with_cluster/ # Colonne: headline, category (raggruppata), prediction (0-4)
+│       └── topics_vs_category/  # Colonne: prediction (0-4), category (raggruppata), count
+│
+├── utils/ # Moduli Python condivisi (se si sceglie di usarli per refactoring)
+│   └── category_mapper.py # (Attualmente la logica è duplicata negli script Spark)
+│
+├── setup/                   # Script di setup
+│   └── setup_hadoop.sh 
+|   └── setup_spark.sh
+|   └── setup_kafka.sh
+│
+└── README.md                  
+```
 
 ## 🛠️ Setup Architettura e Installazione
 
@@ -96,9 +152,9 @@ L'installazione dei componenti principali è facilitata da script di setup.
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
     ```
-### 4. Script di Setup (da eseguire come utente `hadoop`)
+### 4. Script di Setup
 
-L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestite tramite i seguenti script:
+L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestite tramite i seguenti script (tutti eseguiti come utente `hadoop`) :
 
 * `setup_hadoop.sh`
     * **Dove eseguire:** Solo sul nodo `master`.
@@ -287,42 +343,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     * **Streaming:** `streaming_job.py` (con Neo4j Spark Connector) aggiorna Neo4j direttamente.
 * **Esplorazione:** Neo4j Browser (`http://master:7474`).
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
-## 📁 Struttura del Progetto
-```
-TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
-│
-├── kafka/
-│   ├── producer.py          # Invia notizie a Kafka
-│   └── sample_news.jsonl  # Esempio di file per il producer
-│
-├── scripts/
-│   ├── analyze_batch.py     # Job Batch: Preprocessing, Embedding, Scaler, PCA, Training KMeans K=5, Salva Modelli/CSV
-│   └── streaming_job.py     # Job Streaming: Legge Kafka, Carica Modelli, Applica Pipeline, Scrive su Neo4j, Monitora Trend
-│
-├── neo4j/
-│   └── scripts/
-│       └── graph_builder.py   # Per caricamento batch iniziale da CSV (eseguito su master)
-│
-├── models/ (SU HDFS!)         # Percorso: hdfs:///user/hadoop/models/
-│   ├── scaler_model_all_mpnet_base_v2/
-│   ├── pca_model_all_mpnet_base_v2_k40/
-│   └── kmeans_embedding_all_mpnet_base_v2_k5_scaled_pca40/ # Modello per K=5
-│
-├── data/                      # Dati locali sulla VM master
-│   └── output/                # Output CSV del job batch (con K=5)
-│       ├── topics_with_cluster/ # Colonne: headline, category (raggruppata), prediction (0-4)
-│       └── topics_vs_category/  # Colonne: prediction (0-4), category (raggruppata), count
-│
-├── utils/ # Moduli Python condivisi (se si sceglie di usarli per refactoring)
-│   └── category_mapper.py # (Attualmente la logica è duplicata negli script Spark)
-│
-├── setup/                   # Script di setup
-│   └── setup_hadoop.sh 
-|   └── setup_spark.sh
-|   └── setup_kafka.sh
-│
-└── README.md                  
-```
+
 ## 🚀 Come Eseguire il Progetto
 
 1.  **Setup Completo:** Hadoop, YARN, Spark, Kafka, Neo4j (su `master` VM), Java 11, librerie Python. Dataset JSON su HDFS.
