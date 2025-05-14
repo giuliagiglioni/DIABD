@@ -344,7 +344,8 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 
 ## 🚀 Come Eseguire il Progetto
 1.  **Esecuzione Analisi Batch** (da `master`):
-   ```bash
+      ```bash
+      cd ~/TrendSpotter-Cluster
       export PYTHON_EXEC_PATH=$(which python3.8)
       export USER_SITE_PACKAGES_PATH=$(python3.8 -m site --user-site)
       export HF_CACHE_PATH="/home/hadoop/.cache/huggingface"
@@ -357,7 +358,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
         --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
         --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
         scripts/analyze_batch.py
-  ```
+     ```
 2.  **Costruzione Grafo Iniziale** (da `master`):
     ```bash
     cd ~/TrendSpotter-Cluster/neo4j/scripts
@@ -380,7 +381,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
         --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
         --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
         --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
-        spark_jobs/streaming_job.py
+        scripts/streaming_job.py
     ```
     *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
 4.  **Avvio Producer Kafka** (da `master`, nuovo terminale):
