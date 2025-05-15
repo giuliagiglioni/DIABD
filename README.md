@@ -400,10 +400,10 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
         --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
         --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
         scripts/streaming_job.py
-   *(Nota:Monitora console per trend e Neo4j Browser per aggiornamenti)*
   ```
-  
-   **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
+   *(Nota:Monitora console per trend e Neo4j Browser per aggiornamenti)*
+    
+    Guida all'Output dei Trend sulla Console (Tumbling Windows):
     ```
     ======================================================================
        INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
