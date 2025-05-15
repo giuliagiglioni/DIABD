@@ -343,6 +343,36 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
 
 ## 🚀 Come Eseguire il Progetto
+**Prerequisiti**
+* Assicurarsi che il Setup completo (Hadoop, YARN, Spark, Kafka, Neo4j sulla VM `master`, Java 11, librerie Python necessarie installate su tutti i nodi come descritto nella sezione "Setup Architettura e Installazione") sia stato completato.
+* Il dataset JSON originale deve essere su HDFS.
+
+1.    **Avvio Servizi Hadoop (HDFS & YARN)**
+(Eseguire dal nodo `master`, come utente `hadoop`)
+  ```bash
+   start-dfs.sh
+   start-yarn.sh
+   jps
+  ```
+*(Nota: Check su Worker1 e Worker2 (sempre come utente `hadoop`) con jps. Bisogna vedere: DataNode, NodeManager)*
+
+2.    ** Avvio Servizi Kafka (ZooKeeper & Broker)**
+(Eseguire su altri due terminali distinti. Sempre da nodo `master`, come utente `hadoop` )
+```bash
+   cd ~/kafka
+   bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+   bin/kafka-server-start.sh -daemon config/server.properties
+   bin/kafka-topics.sh --list --bootstrap-server master:9092 #verifica esistenza topic
+   jps 
+```
+ Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
+*(Nota: Check su Master con jps. Bisogna vedere: DataNode, NodeManager)*
+# Dovresti vedere i processi QuorumPeerMain (ZooKeeper) e Kafka
+# Verifica anche che il topic (es. 'news_final_test' o quello configurato) esista:
+# bin/kafka-topics.sh --list --bootstrap-server master:9092
+
+
+
 1.  **Esecuzione Analisi Batch** (da `master`):
       ```bash
       cd ~/TrendSpotter-Cluster
@@ -364,7 +394,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     cd ~/TrendSpotter-Cluster/neo4j/scripts
     # Assicurati che graph_builder.py legga da "../../data/output/topics_with_cluster/part-*.csv"
     # e URI "bolt://master:7687"
-    python graph_builder.py
+    python3 graph_builder.py
     ```
 3.  **Avvio Job di Streaming** (da `master`):
     ```bash
