@@ -391,15 +391,15 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
       KAFKA_SPARK_PKG="org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0" 
       NEO4J_SPARK_PKG="org.neo4j:neo4j-connector-apache-spark_2.12:5.3.7_for_spark_3"
 
-      spark-submit --master yarn \
-        --name "TrendSpotter_Streaming_K5_UserEnv" \
-        --conf spark.pyspark.driver.python=${PYTHON_EXEC_PATH} \
-        --conf spark.pyspark.python=${PYTHON_EXEC_PATH} \
-        --conf spark.executorEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
-        --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
-        --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
-        --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
-        scripts/streaming_job.py
+     spark-submit --master yarn \
+      --name "TrendSpotter_Streaming_K5_UserEnv" \
+      --conf spark.pyspark.driver.python=${PYTHON_EXEC_PATH} \
+      --conf spark.pyspark.python=${PYTHON_EXEC_PATH} \
+      --conf spark.executorEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
+      --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
+      --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
+      --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
+      scripts/streaming_job.py
   ```
    *(Nota:Monitora console per trend e Neo4j Browser per aggiornamenti)*
     
