@@ -318,20 +318,6 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quanti topic per cluster) e la loro composizione rispetto alle categorie raggruppate (output CSV `topics_vs_category`).
 * **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato.
 
-    **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
-    ```
-    ======================================================================
-       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
-       - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
-         (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
-       - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
-       - La tabella elencherà i 'ClusterID' (da 0 a 4, se K=5) attivi in quella finestra
-         e il loro 'count' (numero di notizie).
-       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
-         nel grafo Neo4j usando la query Cypher appropriata.
-    ======================================================================
-    ```
-
 ## 🕸️ Grafo Neo4j e Abilitazione Raccomandazioni
 
 * **Costruzione/Aggiornamento:**
@@ -415,7 +401,21 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
         --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
         scripts/streaming_job.py
   ```
-    *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
+   *(Nota:Monitora console per trend e Neo4j Browser per aggiornamenti)*
+   
+    **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
+    ```
+    ======================================================================
+       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
+       - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
+         (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
+       - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
+       - La tabella elencherà i 'ClusterID' (da 0 a 4, se K=5) attivi in quella finestra
+         e il loro 'count' (numero di notizie).
+       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
+         nel grafo Neo4j usando la query Cypher appropriata.
+    ======================================================================
+    ```
 
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
