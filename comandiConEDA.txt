@@ -42,6 +42,9 @@ hdfs dfs -cat hdfs://master:9000/user/hadoop/trendspotter/output/live_topics_<ID
 
 Note: Devi prima usare il comando ls (punto 3) per trovare il <NOME_FILE_PART_CSV> esatto che ti interessa. Puoi cambiare 10 in un altro numero se vuoi vedere più o meno righe.
 
+// pulire file di checkpoint in neo4j
+hdfs dfs -rm -r -skipTrash hdfs:///user/hadoop/spark_checkpoints/k5/neo4j_writer
+hdfs dfs -rm -r -skipTrash hdfs:///user/hadoop/spark_checkpoints/k5/console_trends
 
 -----------------------------------EDA--------------------------------------
 "Durante l'analisi iniziale del dataset originale (News_Category_Dataset_v3), che contiene circa 220.000 record dal 2012 al 2022 e 
