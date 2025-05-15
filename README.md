@@ -422,6 +422,14 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     cd ~/TrendSpotter-Cluster/kafka
     python3 producer.py
   ```
+**Cosa Succede Ora (Flusso Dati Attivo):**
+
+Una volta che `producer.py` invia nuove notizie:
+1.  **Elaborazione Streaming:** Lo script `streaming_job.py` (già in esecuzione) rileva questi nuovi messaggi da Kafka. Ogni notizia viene processata attraverso la pipeline ML completa (pulizia, embedding, scaler, PCA, predizione cluster K=5).
+2.  **Aggiornamento Grafo Neo4j:** I risultati (topic, categoria raggruppata/nuova, ID cluster) vengono inviati **direttamente a Neo4j** (`bolt://master:7687`) tramite il connettore Spark. Il grafo si aggiorna quasi in tempo reale, con un ritardo legato all'intervallo di trigger e al tempo di elaborazione del micro-batch (impostato, ad esempio, per tentare un aggiornamento ogni 2-5 minuti per la demo). Puoi verificare i nuovi dati interrogando Neo4j Browser.
+3.  **Monitoraggio Trend su Console:** Parallelamente, sulla console dove è in esecuzione `streaming_job.py`, la tabella dei trend (conteggio notizie per `ClusterID` su finestre temporali non sovrapposte) verrà aggiornata quando una nuova finestra temporale si "chiude" e ha dati da mostrare (basato sull'impostazione `outputMode("update")` e, ad esempio, un trigger di 5-10 minuti per la demo).
+
+*Nota: La visualizzazione degli aggiornamenti non è istantanea a causa dei tempi di elaborazione e degli intervalli di trigger configurati per lo stream.*
 
 ## 📊 Query Neo4j Utilizzate
 
