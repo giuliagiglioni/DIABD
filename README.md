@@ -310,20 +310,6 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quanti topic per cluster) e la loro composizione rispetto alle categorie raggruppate (output CSV `topics_vs_category`).
 * **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato.
 
-    **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
-    ```
-    ======================================================================
-       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
-       - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
-         (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
-       - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
-       - La tabella elencherà i 'ClusterID' (da 0 a 4, se K=5) attivi in quella finestra
-         e il loro 'count' (numero di notizie).
-       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
-         nel grafo Neo4j usando la query Cypher appropriata.
-    ======================================================================
-    ```
-
 ## 🕸️ Grafo Neo4j e Abilitazione Raccomandazioni
 
 * **Costruzione/Aggiornamento:**
@@ -357,7 +343,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 ```
  Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
 
-*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non creato guardare [Installazione Apache Kafka](#️-installazione-apache-kafka))*
+*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Installazione Apache Kafka](#️-installazione-apache-kafka))*
 
 3.    **Avvio Neo4j**
 (Eseguire dal nodo `master`, come utente `hadoop`)
@@ -397,23 +383,43 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
       KAFKA_SPARK_PKG="org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0" 
       NEO4J_SPARK_PKG="org.neo4j:neo4j-connector-apache-spark_2.12:5.3.7_for_spark_3"
 
-      spark-submit --master yarn \
-        --name "TrendSpotter_Streaming_K5_UserEnv" \
-        --conf spark.pyspark.driver.python=${PYTHON_EXEC_PATH} \
-        --conf spark.pyspark.python=${PYTHON_EXEC_PATH} \
-        --conf spark.executorEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
-        --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
-        --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
-        --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
-        scripts/streaming_job.py
+     spark-submit --master yarn \
+      --name "TrendSpotter_Streaming_K5_UserEnv" \
+      --conf spark.pyspark.driver.python=${PYTHON_EXEC_PATH} \
+      --conf spark.pyspark.python=${PYTHON_EXEC_PATH} \
+      --conf spark.executorEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
+      --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
+      --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
+      --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
+      scripts/streaming_job.py
   ```
-    *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
+   *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
+    
+    Guida all'Output dei Trend sulla Console (Tumbling Windows):
+    ```
+    ======================================================================
+       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
+       - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
+         (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
+       - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
+       - La tabella elencherà i 'ClusterID' (da 0 a 4, se K=5) attivi in quella finestra
+         e il loro 'count' (numero di notizie).
+       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
+         nel grafo Neo4j usando la query Cypher appropriata.
+    ======================================================================
+    ```
 
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
     cd ~/TrendSpotter-Cluster/kafka
     python3 producer.py
   ```
+Una volta che `producer.py` invia nuove notizie:
+1.  **Elaborazione Streaming:** Lo script `streaming_job.py` (già in esecuzione) rileva questi nuovi messaggi da Kafka. Ogni notizia viene processata attraverso la pipeline ML completa (pulizia, embedding, scaler, PCA, predizione cluster K=5).
+2.  **Aggiornamento Grafo Neo4j:** I risultati (topic, categoria raggruppata/nuova, ID cluster) vengono inviati **direttamente a Neo4j** (`bolt://master:7687`) tramite il connettore Spark. Il grafo si aggiorna quasi in tempo reale, con un ritardo legato all'intervallo di trigger e al tempo di elaborazione del micro-batch (impostato, ad esempio, per tentare un aggiornamento ogni 2-5 minuti per la demo). Puoi verificare i nuovi dati interrogando Neo4j Browser.
+3.  **Monitoraggio Trend su Console:** Parallelamente, sulla console dove è in esecuzione `streaming_job.py`, la tabella dei trend (conteggio notizie per `ClusterID` su finestre temporali non sovrapposte) verrà aggiornata quando una nuova finestra temporale si "chiude" e ha dati da mostrare (basato sull'impostazione `outputMode("update")` e da un trigger di 5-10 minuti per la demo).
+
+*Nota: La visualizzazione degli aggiornamenti non è istantanea a causa dei tempi di elaborazione e degli intervalli di trigger configurati per lo stream.*
 
 ## 📊 Query Neo4j Utilizzate
 
