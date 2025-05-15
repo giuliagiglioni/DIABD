@@ -256,8 +256,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
             ```
     * **Azioni Post-Script:** Ricaricare `~/.bashrc` su tutti i nodi.
 
-### 6. Installazione Apache Kafka (su Master)
-
+### 6. Installazione Apache Kafka
 * `setup_kafka.sh`
     * **Dove eseguire:** Solo sul nodo `master`.
     * **Quando:** Dopo aver configurato Spark.
@@ -271,7 +270,6 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
    *(Nota: `replication-factor 1` è adatto solo per un setup con un singolo broker)*
 
 ### 7. Installazione Neo4j (su VM Master)
-
 * Aggiungere repository APT Neo4j, installare `neo4j=1:4.4.x -y`.
 * Configurare `/etc/neo4j/neo4j.conf`:
     * `server.bolt.listen_address=0.0.0.0:7687`
@@ -343,7 +341,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
 
 ## 🚀 Come Eseguire il Progetto
-**Prerequisiti**
+**Passo 0: Prerequisiti**
 * Assicurarsi che il Setup completo (Hadoop, YARN, Spark, Kafka, Neo4j sulla VM `master`, Java 11, librerie Python necessarie installate su tutti i nodi come descritto nella sezione "Setup Architettura e Installazione") sia stato completato.
 * Il dataset JSON originale deve essere su HDFS.
 
@@ -356,7 +354,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
   ```
 *(Nota: Check su Worker1 e Worker2 (sempre come utente `hadoop`) con jps. Bisogna vedere: DataNode, NodeManager)*
 
-2.    ** Avvio Servizi Kafka (ZooKeeper & Broker)**
+2.    **Avvio Servizi Kafka (ZooKeeper & Broker)**
 (Eseguire su altri due terminali distinti. Sempre da nodo `master`, come utente `hadoop` )
 ```bash
    cd ~/kafka
@@ -366,15 +364,18 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
    jps 
 ```
  Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
-*(Nota: Check su Master con jps. Bisogna vedere: DataNode, NodeManager)*
-# Dovresti vedere i processi QuorumPeerMain (ZooKeeper) e Kafka
-# Verifica anche che il topic (es. 'news_final_test' o quello configurato) esista:
-# bin/kafka-topics.sh --list --bootstrap-server master:9092
+*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non creato guardare [Installazione Apache Kafka](#️-installazione-apache-kafka))*
 
+3.    **Avvio Neo4j**
+(Eseguire dal nodo `master`, come utente `hadoop`)
+```bash
+  sudo systemctl start neo4j
+  sudo systemctl status neo4j
+```
+*(Nota:Lo stato dovrebbe essere 'active (running)'. Premi 'q' per uscire dallo status)*
 
-
-1.  **Esecuzione Analisi Batch** (da `master`):
-      ```bash
+**Passo 1: Esecuzione Analisi Batch** (da `master`):
+  ```bash
       cd ~/TrendSpotter-Cluster
       export PYTHON_EXEC_PATH=$(which python3.8)
       export USER_SITE_PACKAGES_PATH=$(python3.8 -m site --user-site)
@@ -388,15 +389,15 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
         --conf spark.driverEnv.PYTHONPATH=${USER_SITE_PACKAGES_PATH} \
         --conf spark.executorEnv.HF_HOME=${HF_CACHE_PATH} \
         scripts/analyze_batch.py
-     ```
-2.  **Costruzione Grafo Iniziale** (da `master`):
-    ```bash
-    cd ~/TrendSpotter-Cluster/neo4j/scripts
-    # Assicurati che graph_builder.py legga da "../../data/output/topics_with_cluster/part-*.csv"
-    # e URI "bolt://master:7687"
-    python3 graph_builder.py
     ```
-3.  **Avvio Job di Streaming** (da `master`):
+
+**Passo 2: Costruzione Grafo Iniziale** (da `master`):
+    ```bash
+       cd ~/TrendSpotter-Cluster/scripts
+       python3 graph_builder.py
+    ```
+      
+**Passo 3: Avvio Job di Streaming** (da `master`):    
     ```bash
       cd ~/TrendSpotter-Cluster
       # Assicurati che l'archivio Conda sia su HDFS e che Kafka sia attivo.
@@ -414,7 +415,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
         scripts/streaming_job.py
     ```
     *(Monitora console per trend e Neo4j Browser per aggiornamenti)*
-4.  **Avvio Producer Kafka** (da `master`, nuovo terminale):
+  **Avvio Producer Kafka** (da `master`, nuovo terminale):
     ```bash
     cd ~/TrendSpotter-Cluster/kafka
     python producer.py
