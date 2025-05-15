@@ -13,26 +13,26 @@ import os
 import sys
 import traceback
 
-# --- CONFIGURAZIONE FINALE (ALLINEATA AL BATCH OTTIMIZZATO) ---
-KAFKA_BOOTSTRAP_SERVERS = "master:9092" # Usa hostname risolvibile nel cluster
-KAFKA_TOPIC = "test"
-HDFS_MODEL_DIR = "hdfs:///user/hadoop/models" # Dove sono salvati i modelli
+# --- CONFIGURAZIONE ---
+KAFKA_BOOTSTRAP_SERVERS = "master:9092" # Indirizzo del broker Kafka
+KAFKA_TOPIC = "news_streaming"
+HDFS_MODEL_DIR = "hdfs:///user/hadoop/models" # Directory HDFS per i modelli
 
-# Neo4j Configuration (Neo4j gira su 'master')
-NEO4J_URI = "bolt://master:7687"
-NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "progetto24" # ATTENZIONE: Gestire meglio in produzione!
+# Neo4j Configuration
+NEO4J_URI = "bolt://master:7687" # Indirizzo del server Neo4j
+NEO4J_USER = "neo4j" # Nome utente Neo4j
+NEO4J_PASSWORD = "progetto24" # Password Neo4j
 
-# Parametri pipeline (DEVONO CORRISPONDERE A QUELLI USATI PER ADDDESTRARE I MODELLI SALVATI)
+# Parametri pipeline
 SENTENCE_MODEL_NAME = 'all-mpnet-base-v2'
 K_CLUSTERS = 5
 PCA_COMPONENTS = 40
-USE_TEXT_PREPROCESSING = True # Imposta come nel batch finale
-MIN_TEXT_LENGTH = 0 # Imposta come nel batch finale (0 => non filtra)
-USE_SCALER = True # Imposta come nel batch finale
-USE_PCA = True # Imposta come nel batch finale
+USE_TEXT_PREPROCESSING = True 
+MIN_TEXT_LENGTH = 0
+USE_SCALER = True 
+USE_PCA = True 
 
-# Nomi colonne pipeline (DEVONO CORRISPONDERE)
+# Nomi colonne pipeline
 EMBEDDING_ARRAY_COL = "embedding_array"
 EMBEDDING_VEC_COL = "embedding_vec"
 SCALED_FEATURE_COL = "scaled_features"
@@ -44,27 +44,27 @@ PREDICTION_COL = "prediction"
 WINDOW_DURATION = "2 minutes" # Larghezza finestra
 SLIDE_DURATION = "2 minutes" # Intervallo di aggiornamento
 TIMESTAMP_COL = "processing_timestamp" # Timestamp aggiunto da Spark
-WATERMARK_DELAY_TRENDS = "1 minute"   # Ritardo per il watermark
+WATERMARK_DELAY_TRENDS = "1 minute"   # Delay per watermarking
 CONSOLE_TRIGGER_INTERVAL = "30 seconds" # Frequenza di check/stampa della console
 
-# Costruisci percorsi modelli HDFS (con K=5)
+# Percorsi modelli HDFS
 scaler_model_path = f"{HDFS_MODEL_DIR}/scaler_model_{SENTENCE_MODEL_NAME.replace('-', '_')}"
 pca_model_path = f"{HDFS_MODEL_DIR}/pca_model_{SENTENCE_MODEL_NAME.replace('-', '_')}_k{PCA_COMPONENTS}"
-kmeans_model_name = f"kmeans_embedding_{SENTENCE_MODEL_NAME.replace('-', '_')}_k{K_CLUSTERS}" # Usa K=13
+kmeans_model_name = f"kmeans_embedding_{SENTENCE_MODEL_NAME.replace('-', '_')}_k{K_CLUSTERS}" 
 if USE_SCALER: kmeans_model_name += "_scaled"
 if USE_PCA: kmeans_model_name += f"_pca{PCA_COMPONENTS}"
 kmeans_model_path = f"{HDFS_MODEL_DIR}/{kmeans_model_name}"
 
-HDFS_NAMENODE_URI = "hdfs://master:9000" # Definisci l'URI base del NameNode
-# --- Definisci percorsi Checkpoint UNICI per ogni query ---
-HDFS_CHECKPOINT_PATH_BASE = f"{HDFS_NAMENODE_URI}/user/hadoop/spark_checkpoints/k{K_CLUSTERS}" # Base per K corrente
+HDFS_NAMENODE_URI = "hdfs://master:9000" # URI del Namenode HDFS
+# Percorsi checkpoint HDFS
+HDFS_CHECKPOINT_PATH_BASE = f"{HDFS_NAMENODE_URI}/user/hadoop/spark_checkpoints/k{K_CLUSTERS}" 
 HDFS_CHECKPOINT_PATH_NEO4J = f"{HDFS_CHECKPOINT_PATH_BASE}/neo4j_writer"
 HDFS_CHECKPOINT_PATH_CONSOLE = f"{HDFS_CHECKPOINT_PATH_BASE}/console_trends"
 
-# --- Definisci pacchetto Connector (verifica versione!) ---
-NEO4J_CONNECTOR_PACKAGE = "org.neo4j.spark:neo4j-connector-apache-spark_2.12:5.2.0" # Versione esempio per Spark 3.5
+# Pacchetto Neo4j Connector
+NEO4J_CONNECTOR_PACKAGE = "org.neo4j.spark:neo4j-connector-apache-spark_2.12:5.3.7_for_spark_3" 
 
-# 1. Crea la sessione Spark Streaming (con config Neo4j e Pacchetto)
+# --- INIZIO SCRIPT ---
 print("[*] Creazione sessione Spark per lo streaming...")
 try:
     spark = SparkSession.builder \
@@ -85,12 +85,11 @@ except Exception as e:
 
 spark.sparkContext.setLogLevel("WARN")
 
-# 2. Carica i modelli di Preprocessing e Clustering da HDFS
+# Carica modelli da HDFS
 print(f"[*] Caricamento modelli da HDFS...")
 try:
     scaler_model = StandardScalerModel.load(scaler_model_path) if USE_SCALER else None
     pca_model = PCAModel.load(pca_model_path) if USE_PCA else None
-    # Carica il modello KMeans specifico K=13
     print(f"[*] Caricamento KMeans da: {kmeans_model_path}")
     kmeans_model = KMeansModel.load(kmeans_model_path)
     kmeans_model.setFeaturesCol(FINAL_FEATURE_COL) # Imposta colonna corretta
@@ -99,7 +98,7 @@ try:
 except Exception as e:
     print(f"\n[ERRORE] Impossibile caricare modelli da HDFS: {e}"); traceback.print_exc(); spark.stop(); sys.exit(1)
 
-# 3. Definisci UDF (identiche al batch finale)
+# Funzioni di pre-elaborazione
 os.environ['HF_HOME'] = '/home/hadoop/.cache/huggingface' # Imposta cache
 def clean_text(text): # Funzione Python standard
     if not text: return ""
@@ -119,14 +118,14 @@ def generate_embeddings_udf(texts: pd.Series) -> pd.Series:
 
 to_vector_udf = udf(lambda x: Vectors.dense(x) if x is not None else None, VectorUDT())
 
-# 4. Definisci Schema JSON da Kafka
+# Definisci Schema JSON da Kafka
 schema = StructType([
     StructField("headline", StringType(), True),
     StructField("category", StringType(), True),
     StructField("short_description", StringType(), True)
 ])
 
-# 5. Leggi lo stream da Kafka
+# Lettura stream da Kafka
 print(f"[*] Lettura stream Kafka dal topic '{KAFKA_TOPIC}'...")
 kafka_stream_df = spark \
     .readStream \
@@ -137,10 +136,10 @@ kafka_stream_df = spark \
     .option("failOnDataLoss", "false") \
     .load()
 
-# 6. Pipeline di Trasformazione dello Stream (definita una volta)
+# 6. Pipeline di Trasformazione dello Stream 
 print("[*] Definizione trasformazioni stream...")
 
-# Parsa JSON e aggiungi timestamp di processamento
+# Applica schema JSON e seleziona colonne
 base_stream = kafka_stream_df \
     .selectExpr("CAST(value AS STRING) as json", "timestamp as kafka_timestamp") \
     .select(from_json(col("json"), schema).alias("data"), "kafka_timestamp") \
@@ -148,7 +147,7 @@ base_stream = kafka_stream_df \
     .withColumn(TIMESTAMP_COL, current_timestamp()) \
     .na.drop(subset=["headline", "category"])
 
-# Applica raggruppamento categorie
+# Raggruppa categorie
 category_grouped_stream = base_stream.withColumn(
     "category_temp_grouped",
      when(col("category").isin("ARTS", "ARTS & CULTURE", "CULTURE & ARTS"), "ARTS_CULTURE")
@@ -176,29 +175,29 @@ category_grouped_stream = base_stream.withColumn(
     .otherwise(col("category")) # Mantiene nuove categorie
 ).drop("category").withColumnRenamed("category_temp_grouped", "category")
 
-# Applica pulizia testo
+# Prepara il testo per l'embedding
 text_prepared_stream = category_grouped_stream.withColumn(
     "text_for_embedding", # Nome temporaneo per chiarezza
-    concat_ws(" ", col("headline"), col("short_description")) # <-- CONCATENA QUI
+    concat_ws(" ", col("headline"), col("short_description")) 
 ).filter(col("text_for_embedding").isNotNull() & (col("text_for_embedding") != "") & (length(col("text_for_embedding")) > 1))
 if USE_TEXT_PREPROCESSING:
     text_cleaned_stream = text_prepared_stream.withColumn("text", clean_text_udf(col("text_for_embedding"))) \
                                              .filter(length(col("text")) >= MIN_TEXT_LENGTH)
 
-# Applica pipeline ML: Embedding -> Vector -> Scaler -> PCA -> KMeans
+# Pipeline ML: Embedding -> Vector -> Scaler -> PCA -> KMeans
 embedded_stream = text_cleaned_stream.withColumn(EMBEDDING_ARRAY_COL, generate_embeddings_udf(col("text")))
 vector_stream = embedded_stream.withColumn(EMBEDDING_VEC_COL, to_vector_udf(col(EMBEDDING_ARRAY_COL)))
 scaled_stream = scaler_model.transform(vector_stream) if scaler_model else vector_stream
 pca_stream = pca_model.transform(scaled_stream) if pca_model else scaled_stream
-clustered_stream = kmeans_model.transform(pca_stream) # Aggiunge colonna 'prediction'
+clustered_stream = kmeans_model.transform(pca_stream) 
 
-# 7. Definisci la Query di Scrittura su Neo4j (Sink 1)
+# Scrittura dello Stream su Neo4j 
 print("[*] Configurazione scrittura stream su Neo4j...")
 output_neo4j_df = clustered_stream.select(
     col("headline").alias("topic"),
     col("category").alias("category"), # Categoria raggruppata o nuova
     col("short_description").alias("description"),
-    col(PREDICTION_COL).cast(StringType()).alias("cluster") # ID Cluster come String
+    col(PREDICTION_COL).cast(StringType()).alias("cluster") 
 )
 
 cypher_query = """
@@ -222,7 +221,7 @@ neo4j_stream_writer = output_neo4j_df.writeStream \
     .option("save.mode", "Append") \
     .trigger(processingTime='2 minutes')
 
-# 8. Definisci la Query di Analisi Trend su Console (Sink 2)
+# Configurazione analisi trend su finestra temporale
 print("[*] Configurazione analisi trend su finestra temporale...")
 windowed_counts = clustered_stream \
     .withWatermark(TIMESTAMP_COL, WATERMARK_DELAY_TRENDS) \
@@ -238,7 +237,7 @@ trend_stream_writer = windowed_counts.writeStream \
     .option("checkpointLocation", HDFS_CHECKPOINT_PATH_CONSOLE) \
     .trigger(processingTime=CONSOLE_TRIGGER_INTERVAL) # Stampa ogni minuto
 
-# --- Avvio delle query ---
+# Avvio dello streaming
 try:
     print("[*] Avvio scrittura stream su Neo4j...")
     query_neo4j = neo4j_stream_writer.start()
@@ -247,19 +246,21 @@ try:
     query_trends = trend_stream_writer.start()
 
     print(f"\n\n📡 Streaming Attivo!")
-    print(f"   Aggiornamenti Neo4j -> {NEO4J_URI} ") # Usa la variabile dell'intervallo
-    print(f"   Analisi Trend (K={K_CLUSTERS}) ") # Usa la variabile dell'intervallo
+    print(f"   Aggiornamenti Neo4j -> {NEO4J_URI} ") 
+    print(f"   Analisi Trend (K={K_CLUSTERS}) ") 
     print("\n" + "="*70)
     print("   INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE (TUMBLING WINDOWS):")
-    print("   - Verrà stampata una tabella solo quando una finestra temporale (es. 10 min) si chiude e ha dati.")
-    print("   - Ogni tabella mostra i conteggi PER QUEL BLOCCO DI TEMPO SPECIFICO.")
-    print(f"   - I 'ClusterID' (da 0 a {K_CLUSTERS-1}) sono ORDINATI per 'count' DECRESCENTE.")
-    print("   - Il ClusterID IN CIMA ALLA LISTA è il TEMA PIU' FREQUENTE in quel blocco di tempo.")
-    print("   - Per capire COSA rappresenta quel ClusterID, esamina i suoi contenuti (titoli) nel grafo Neo4j usando la query Cypher appropriata.")
+    print("   - Lo stream stamperà una tabella sulla console solo quando una finestra temporale")
+    print("     (es. **2 minuti**) si 'chiude' e i suoi conteggi aggregati sono finalizzati.")
+    print("   - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.")
+    print(f"   - La tabella elencherà i 'ClusterID' (da 0 a 4) attivi in quella finestra")
+    print("     e il loro 'count' (numero di notizie)")
+    print("   - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)")
+    print("     nel grafo Neo4j usando la query Cypher appropriata.")
     print("="*70 + "\n")
     print("\n   Attendere l'elaborazione dei batch dopo l'invio di notizie dal producer.")
     print("   Premi CTRL+C per terminare.")
-    spark.streams.awaitAnyTermination() # Attende che una delle query venga terminata
+    spark.streams.awaitAnyTermination() # Attende la terminazione di uno dei flussi
 
 except KeyboardInterrupt:
     print("\n[*] Ricevuto CTRL+C. Arresto in corso...")
@@ -279,7 +280,7 @@ finally:
             print("[*] Stopping trends query...")
             query_trends.stop()
             stopped_trends = True
-        # Attendi un po' per permettere lo stop pulito
+        # Terminazione dei flussi
         if stopped_neo4j: query_neo4j.awaitTermination(timeout=60)
         if stopped_trends: query_trends.awaitTermination(timeout=60)
 

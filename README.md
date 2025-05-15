@@ -62,30 +62,22 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 ├── scripts/
 │   ├── analyze_batch.py     # Job Batch: Preprocessing, Embedding, Scaler, PCA, Training KMeans K=5, Salva Modelli/CSV
 │   └── streaming_job.py     # Job Streaming: Legge Kafka, Carica Modelli, Applica Pipeline, Scrive su Neo4j, Monitora Trend
-│
-├── neo4j/
-│   └── scripts/
-│       └── graph_builder.py   # Per caricamento batch iniziale da CSV (eseguito su master)
+|   └── graph_builder.py     # Costruzione del grafo
 │
 ├── models/ (SU HDFS!)         # Percorso: hdfs:///user/hadoop/models/
 │   ├── scaler_model_all_mpnet_base_v2/
 │   ├── pca_model_all_mpnet_base_v2_k40/
-│   └── kmeans_embedding_all_mpnet_base_v2_k5_scaled_pca40/ # Modello per K=5
+│   └── kmeans_embedding_all_mpnet_base_v2_k5_scaled_pca40/ 
 │
 ├── data/                      # Dati locali sulla VM master
-│   └── output/                # Output CSV del job batch (con K=5)
-│       ├── topics_with_cluster/ # Colonne: headline, category (raggruppata), prediction (0-4)
-│       └── topics_vs_category/  # Colonne: prediction (0-4), category (raggruppata), count
-│
-├── utils/ # Moduli Python condivisi (se si sceglie di usarli per refactoring)
-│   └── category_mapper.py # (Attualmente la logica è duplicata negli script Spark)
+│   └── output/                
+│       ├── topics_with_cluster/ 
+│       └── topics_vs_category/  
 │
 ├── setup/                   # Script di setup
 │   └── setup_hadoop.sh 
 |   └── setup_spark.sh
-|   └── setup_kafka.sh
-│
-└── README.md                  
+|   └── setup_kafka.sh         
 ```
 
 ## 🛠️ Setup Architettura e Installazione
