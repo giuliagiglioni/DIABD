@@ -401,7 +401,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
       --packages ${KAFKA_SPARK_PKG},${NEO4J_SPARK_PKG} \
       scripts/streaming_job.py
   ```
-   *(Nota :Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuvoo export delle variabili d'ambiente)*
+   *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
     
     Guida all'Output dei Trend sulla Console (Tumbling Windows):
     ```
