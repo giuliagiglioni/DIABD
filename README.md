@@ -403,7 +403,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
   ```
    *(Nota:Monitora console per trend e Neo4j Browser per aggiornamenti)*
    
-    **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
+   **Guida all'Output dei Trend sulla Console (Tumbling Windows):**
     ```
     ======================================================================
        INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
