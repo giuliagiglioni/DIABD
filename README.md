@@ -29,7 +29,8 @@
     * `date`: Data di pubblicazione (formato `YYYY-MM-DD`).
 * **Dati di Streaming (Simulati):** Il producer Kafka invia messaggi JSON con `headline` e `category`.
     ```json
-    { "headline": "Nuova notizia su AI", "category": "TECH" }
+   {"headline": "Titolo Notizia 1", "category": "NOME_CATEGORIA_1", "short_description": "Descrizione breve..."}
+   {"headline": "Titolo Notizia 2", "category": "NOME_CATEGORIA_2", "short_description": "Altra descrizione..."}   
     ```
 
 ## 🛠️ Setup Architettura e Installazione
