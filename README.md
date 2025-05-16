@@ -451,15 +451,15 @@ MATCH (c:Cluster {id: 'ID_CLUSTER'})-[:CONTAINS]->(t:Topic)-[:BELONGS_TO]->(cat:
 RETURN cat.name AS CategoriaRaggruppata, count(t) AS ConteggioNotizie
 ORDER BY ConteggioNotizie DESC;
 
-// Query 6: Raccomandazione Basata su Cluster per 'Alessia'
-MATCH (u:User {name:'Alessia'})-[:INTERESTED_IN]->(liked_topic:Topic)
+// Query 6: Raccomandazione Basata su Cluster per 'Giulia'
+MATCH (u:User {name:'Giulia'})-[:INTERESTED_IN]->(liked_topic:Topic)
 MATCH (liked_topic)<-[:CONTAINS]-(c:Cluster)-[:CONTAINS]->(rec_topic:Topic)
 WHERE NOT (u)-[:INTERESTED_IN]->(rec_topic)
 RETURN DISTINCT rec_topic.name AS Raccomandazione, c.id AS DalCluster
 LIMIT 10;
 
-// Query 7: Raccomandazione Basata su Categoria Raggruppata per 'Alessia'
-MATCH (u:User {name:'Alessia'})-[:INTERESTED_IN]->(liked_topic:Topic)
+// Query 7: Raccomandazione Basata su Categoria Raggruppata per 'Daniele'
+MATCH (u:User {name:'Daniele'})-[:INTERESTED_IN]->(liked_topic:Topic)
 MATCH (liked_topic)-[:BELONGS_TO]->(cat:Category)
 MATCH (rec_topic:Topic)-[:BELONGS_TO]->(cat)
 WHERE NOT (u)-[:INTERESTED_IN]->(rec_topic)
