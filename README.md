@@ -380,8 +380,8 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 **Passo 3: Avvio Job di Streaming** (da `master`):    
   ```bash
       cd ~/TrendSpotter-Cluster
-      KAFKA_SPARK_PKG="org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0" 
-      NEO4J_SPARK_PKG="org.neo4j:neo4j-connector-apache-spark_2.12:5.3.7_for_spark_3"
+      export KAFKA_SPARK_PKG="org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0" 
+      export NEO4J_SPARK_PKG="org.neo4j:neo4j-connector-apache-spark_2.12:5.3.7_for_spark_3"
 
      spark-submit --master yarn \
       --name "TrendSpotter_Streaming_K5_UserEnv" \
@@ -411,7 +411,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
-    cd ~/TrendSpotter-Cluster/kafka
+    cd ~/kafka
     python3 producer.py
   ```
 Una volta che `producer.py` invia nuove notizie:
