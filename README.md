@@ -343,7 +343,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 ```
  Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
 
-*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Installazione Apache Kafka](#️-installazione-apache-kafka))*
+*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Setup Architettura e Installazione](#️-setup-architettura-e-installazione))*
 
 3.    **Avvio Neo4j**
 (Eseguire dal nodo `master`, come utente `hadoop`)
