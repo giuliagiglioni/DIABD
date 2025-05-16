@@ -15,7 +15,7 @@ import traceback
 
 # --- CONFIGURAZIONE ---
 KAFKA_BOOTSTRAP_SERVERS = "master:9092" # Indirizzo del broker Kafka
-KAFKA_TOPIC = "news_streaming"
+KAFKA_TOPIC = "test"
 HDFS_MODEL_DIR = "hdfs:///user/hadoop/models" # Directory HDFS per i modelli
 
 # Neo4j Configuration

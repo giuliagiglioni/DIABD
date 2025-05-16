@@ -8,7 +8,7 @@ import random
 
 # --- Configurazioni ---
 KAFKA_BROKER = 'master:9092' # Indirizzo del broker Kafka
-KAFKA_TOPIC = 'news_streaming'
+KAFKA_TOPIC = 'test'
 INPUT_FILE = 'sample_news.jsonl' # File di input JSONL
 SLEEP_TIME = 3 # Tempo di attesa tra gli invii di news
 
