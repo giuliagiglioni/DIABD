@@ -95,3 +95,82 @@ TrendSpotter-Cluster/
 │ └── setup_kafka.sh
 ```
 
+
+---
+
+## 🛠️ Architecture Setup and Installation
+
+The system is deployed on a 3-node VM cluster (Ubuntu 20.04):
+
+- **master**: NameNode, ResourceManager, Kafka Broker, Neo4j, Spark driver
+- **worker1**/**worker2**: DataNode, NodeManager, Spark workers
+
+All installation details, network setup, SSH config, and setup scripts are explained in the original [README.md](README.md).
+
+---
+
+## 🧪 Data Preprocessing (Batch and Stream)
+
+Key preprocessing steps include:
+
+1. **Date Filtering:** Only records from 2020 onwards are considered (about 5500 entries).
+2. **Category Grouping:** 42 original categories are manually grouped into 22 meaningful categories (e.g., `BUSINESS_FINANCE`, `GOOD_WEIRD_NEWS`, `OTHER`).
+3. **Text Cleaning:** Headlines and descriptions are lowercased, URLs/numbers/punctuation cleaned. No min-length filter.
+
+---
+
+## ✨ Advanced ML Pipeline and Clustering (Batch and Stream)
+
+1. **Sentence Embeddings:** 768-dim embeddings from `all-mpnet-base-v2` model.
+2. **Conversion to VectorUDT:** Required for Spark ML compatibility.
+3. **Feature Scaling:** Standardization via Z-score.
+4. **Dimensionality Reduction:** PCA to 40 components.
+5. **Clustering:** KMeans with K=5, based on empirical tuning (Silhouette ≈ 0.13).
+6. **Model Persistence:** Models trained in batch are saved to HDFS and reused in stream jobs.
+
+---
+
+## 📈 Trend Identification and Monitoring
+
+- **Batch:** Trends identified by cluster size and category composition.
+- **Streaming:** Tumbling windows via Spark Streaming print per-window topic counts by cluster ID, enabling trend detection over time.
+
+---
+
+## 🕸️ Neo4j Graph and Recommendation Enablement
+
+- **Batch (graph_builder.py):** Loads CSVs into Neo4j.
+- **Streaming (streaming_job.py):** Updates Neo4j live via connector.
+- **Cypher Queries:** Used for personalized recommendations, trend exploration, and graph statistics.
+
+---
+
+## 🚀 How to Run the Project
+
+See section [🚀 Come Eseguire il Progetto](README.md#-come-eseguire-il-progetto) in the Italian README for full instructions, including:
+
+- Starting HDFS, YARN, Kafka, Neo4j
+- Running batch and streaming jobs
+- Kafka producer usage
+- Viewing results in Neo4j and console
+
+---
+
+## 📊 Neo4j Queries Used
+
+Includes:
+- Graph stats
+- Top clusters and categories
+- User-based recommendations (cluster/category)
+- Cluster composition
+- Neo4j Cypher examples
+
+Full list in [README.md](README.md#-query-neo4j-utilizzate)
+
+---
+
+## ✅ Conclusions
+
+TrendSpotter demonstrates a full Big Data pipeline for textual trend analysis using Kafka, Spark, Hadoop, and Neo4j. It integrates advanced NLP (Sentence Embeddings) and ML (Scaler, PCA, KMeans) to discover meaningful topic clusters. Trends are monitored both in batch and via Spark Streaming, while a graph-based structure enables exploration and personalized recommendations via Cypher. This project is a strong example of real-world Big Data architecture and analysis.
+
+
