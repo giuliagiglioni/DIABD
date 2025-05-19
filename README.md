@@ -14,6 +14,10 @@
 * [📊 Query Neo4j Utilizzate](#-query-neo4j-utilizzate)
 * [✅ Conclusioni](#-conclusioni)
 
+
+🇮🇹 Questo progetto è descritto in italiano.  
+🌍 [Read this README in English](README.en.md)
+
 ## 🚀 Introduzione
 
 **TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla costruzione di un grafo in Neo4j.
