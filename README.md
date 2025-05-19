@@ -1,5 +1,5 @@
-# 🧠 TrendSpotter: Analisi e Abilitazione di Raccomandazioni da Trend Emergenti su Flussi di Dati
-## 📖 Indice
+# TrendSpotter: Analisi e Abilitazione di Raccomandazioni da Trend Emergenti su Flussi di Dati
+## Indice
 
 * [🚀 Introduzione](#-introduzione)
 * [🧰 Stack Tecnologico](#-stack-tecnologico)
@@ -31,7 +31,7 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
 | Tecnologia                 | Scopo Principale nel Progetto                                                                                                | Versione (Indicativa) |
 | :------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
 | **Apache Kafka** | Ingestione e buffering di flussi di notizie simulate in tempo reale.                  | 3.6.0                 |
-| **Apache Spark** | Elaborazione distribuita batch e streaming; generazione Sentence Embeddings (`all-mpnet-base-v2`); preprocessing feature (Scaler, PCA); clustering (KMeans K=5); analisi trend su finestre tumbling. | 3.5.0                 |
+| **Apache Spark** | Elaborazione distribuita batch e streaming; generazione Sentence Embeddings (`all-mpnet-base-v2`); preprocessing feature (Scaler, PCA); clustering (KMeans); analisi trend su finestre tumbling. | 3.5.0                 |
 | **Apache Hadoop** | Archiviazione distribuita (HDFS per dataset, modelli ML, checkpoints); gestione risorse cluster (YARN).                          | 3.2.4                 |
 | **Neo4j Community Edition**| Modellazione, persistenza (su VM `master`) e visualizzazione del grafo della conoscenza.                                       | 4.4.x                 |
 | **Python & PySpark** | Linguaggio principale per scripting, sviluppo UDF, interazione con Kafka e Neo4j.                                           | Python 3.8+           |
@@ -290,7 +290,7 @@ Per migliorare la qualità e la rilevanza dell'analisi, sono stati implementati 
 
 1.  **Filtraggio Temporale:** Vengono conservati e analizzati unicamente i record con data `date >= "2020-01-01"`. Questa scelta focalizza l'analisi sui dati più recenti (circa 5500 record nel test), cruciali per l'identificazione di trend attuali, ottimizzando al contempo le performance.
 2.  **Raggruppamento Semantico delle Categorie:** Le 42 categorie originali del dataset sono state consolidate manualmente in **22 categorie finali** più significative e meno frammentate (es. `ARTS_CULTURE`, `BUSINESS_FINANCE`, `PARENTING_FAMILY`, `VOICES`, `GOOD_WEIRD_NEWS`, `OTHER`). La colonna `category` nel DataFrame processato (e quindi nel grafo) contiene questi nomi raggruppati. Le categorie completamente nuove incontrate nello stream vengono mantenute con il loro nome originale.
-3.  **Pulizia Avanzata del Testo:** Prima della generazione degli embedding, il testo combinato di `headline` e `short_description` (nel batch) o la sola `headline` (nello stream, come da configurazione attuale) viene sottoposto a pulizia: conversione in lowercase, rimozione di URL, numeri isolati e punteggiatura eccessiva, e normalizzazione degli spazi. È stato impostato `MIN_TEXT_LENGTH = 0` (nessun filtro sulla lunghezza minima del testo).
+3.  **Pulizia Avanzata del Testo:** Prima della generazione degli embedding, il testo combinato di `headline` e `short_description` (nel batch) e nello stream, viene sottoposto a pulizia: conversione in lowercase, rimozione di URL, numeri isolati e punteggiatura eccessiva, e normalizzazione degli spazi. È stato impostato `MIN_TEXT_LENGTH = 0` (nessun filtro sulla lunghezza minima del testo).
 
 ## ✨ Pipeline ML Avanzata e Clustering (Batch e Stream)
 
@@ -300,8 +300,8 @@ Per superare i limiti di approcci più semplici, è stata implementata una pipel
 2.  **Conversione a VectorUDT:** Gli array di embedding vengono convertiti nel formato `VectorUDT` nativo di Spark ML.
 3.  **Feature Scaling (StandardScaler):** Ai vettori embedding viene applicata la standardizzazione (Z-score) per normalizzare le feature, migliorando la performance degli algoritmi basati sulla distanza. Il modello `StandardScalerModel` addestrato nel batch viene salvato e riutilizzato nello stream.
 4.  **Riduzione Dimensionalità (PCA):** Viene applicata la Principal Component Analysis (PCA) per ridurre la dimensionalità dei vettori standardizzati a **40 componenti principali**. Questo passo riduce il rumore, la complessità computazionale e può migliorare la separazione dei cluster. Il modello `PCAModel` addestrato nel batch viene salvato e riutilizzato nello stream.
-5.  **Clustering (KMeans):** L'algoritmo KMeans viene applicato alle feature finali (output della PCA). È stato scelto **K=5** come numero di cluster, basandosi su sperimentazioni che hanno indicato una modesta ma positiva qualità di clustering (Silhouette Score di **~0.13** nel batch, un netto miglioramento rispetto a TF-IDF). Il modello `KMeansModel` (K=5) addestrato nel batch viene salvato e riutilizzato nello stream.
-6.  **Salvataggio e Caricamento Modelli:** Tutti i modelli della pipeline (Scaler, PCA, KMeans K=5) addestrati da `analyze_batch.py` vengono salvati su HDFS. Lo script `streaming_job.py` carica questi stessi modelli per garantire coerenza assoluta nell'elaborazione dei dati in tempo reale.
+5.  **Clustering (KMeans):** L'algoritmo KMeans viene applicato alle feature finali (output della PCA). È stato scelto **K=5** come numero di cluster, basandosi su sperimentazioni che hanno indicato una modesta ma positiva qualità di clustering (Silhouette Score di **~0.13** nel batch, un netto miglioramento rispetto a TF-IDF). Il modello `KMeansModel` addestrato nel batch viene salvato e riutilizzato nello stream.
+6.  **Salvataggio e Caricamento Modelli:** Tutti i modelli della pipeline (Scaler, PCA, KMeans) addestrati da `analyze_batch.py` vengono salvati su HDFS. Lo script `streaming_job.py` carica questi stessi modelli per garantire coerenza assoluta nell'elaborazione dei dati in tempo reale.
 
 ## 📈 Identificazione e Monitoraggio dei Trend
 
@@ -402,7 +402,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
        - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
          (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
        - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
-       - La tabella elencherà i 'ClusterID' (da 0 a 4, se K=5) attivi in quella finestra
+       - La tabella elencherà i 'ClusterID' attivi in quella finestra
          e il loro 'count' (numero di notizie).
        - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
          nel grafo Neo4j usando la query Cypher appropriata.
@@ -415,7 +415,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     python3 producer.py
   ```
 Una volta che `producer.py` invia nuove notizie:
-1.  **Elaborazione Streaming:** Lo script `streaming_job.py` (già in esecuzione) rileva questi nuovi messaggi da Kafka. Ogni notizia viene processata attraverso la pipeline ML completa (pulizia, embedding, scaler, PCA, predizione cluster K=5).
+1.  **Elaborazione Streaming:** Lo script `streaming_job.py` (già in esecuzione) rileva questi nuovi messaggi da Kafka. Ogni notizia viene processata attraverso la pipeline ML completa.
 2.  **Aggiornamento Grafo Neo4j:** I risultati (topic, categoria raggruppata/nuova, ID cluster) vengono inviati **direttamente a Neo4j** (`bolt://master:7687`) tramite il connettore Spark. Il grafo si aggiorna quasi in tempo reale, con un ritardo legato all'intervallo di trigger e al tempo di elaborazione del micro-batch (impostato, ad esempio, per tentare un aggiornamento ogni 2-5 minuti per la demo). Puoi verificare i nuovi dati interrogando Neo4j Browser.
 3.  **Monitoraggio Trend su Console:** Parallelamente, sulla console dove è in esecuzione `streaming_job.py`, la tabella dei trend (conteggio notizie per `ClusterID` su finestre temporali non sovrapposte) verrà aggiornata quando una nuova finestra temporale si "chiude" e ha dati da mostrare (basato sull'impostazione `outputMode("update")` e da un trigger di 5-10 minuti per la demo).
 
@@ -471,6 +471,6 @@ MATCH (c:Cluster {id: 'ID_CLUSTER'})-[:CONTAINS]->(t:Topic)<-[:INTERESTED_IN]-(u
 RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse, c.id AS ClusterID;
 ```
 ## ✅ Conclusioni
-TrendSpotter dimostra l'implementazione di una pipeline Big Data end-to-end per l'analisi di trend da flussi testuali. Utilizzando Kafka, Spark, Hadoop e Neo4j, il sistema integra tecniche avanzate di NLP (Sentence Embeddings) e Machine Learning (Scaler, PCA, KMeans K=5) per ottenere cluster tematici significativi (Silhouette ~0.13). L'identificazione dei trend si basa sull'analisi della frequenza di questi cluster (batch) e sulla variazione di frequenza nel tempo (monitorata su console dallo stream Spark con finestre tumbling). Il grafo Neo4j, aggiornato in (near) real-time, abilita la visualizzazione e le raccomandazioni. Il progetto è una valida dimostrazione dell'applicazione dello stack Big Data per l'analisi di trend.
+TrendSpotter dimostra l'implementazione di una pipeline Big Data end-to-end per l'analisi di trend da flussi testuali. Utilizzando Kafka, Spark, Hadoop e Neo4j, il sistema integra tecniche avanzate di NLP (Sentence Embeddings) e Machine Learning (Scaler, PCA, KMeans) per ottenere cluster tematici significativi (Silhouette ~0.13). L'identificazione dei trend si basa sull'analisi della frequenza di questi cluster (batch) e sulla variazione di frequenza nel tempo (monitorata su console dallo stream Spark con finestre tumbling). Il grafo Neo4j, aggiornato in (near) real-time, abilita la visualizzazione e le raccomandazioni. Il progetto è una valida dimostrazione dell'applicazione dello stack Big Data per l'analisi di trend.
 
 
