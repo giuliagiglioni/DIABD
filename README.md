@@ -284,6 +284,8 @@ pip install --user pandas pyarrow sentence-transformers torch neo4j kafka-python
 * Scaricare il dataset (`News_Category_Dataset_v3.json`) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
 * Installare le librerie Python necessarie (`pip install pyspark neo4j kafka-python pandas` - `pyspark` spesso non serve installarlo a mano se si usa `spark-submit` che lo include) nell'ambiente Python usato da Spark e dagli script locali.
 
+![Architettura del Sistema](img/schema.jpg)
+
 ## 🧪 Preprocessing Dati (in Batch e Stream)
 
 Per migliorare la qualità e la rilevanza dell'analisi, sono stati implementati i seguenti passi di preprocessing:
