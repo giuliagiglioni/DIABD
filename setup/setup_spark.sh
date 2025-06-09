@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # === setup_spark.sh ===
-# Script automatico per installare Apache Spark 3.5.0 su un nodo del cluster (master o worker)
-# Funziona su Ubuntu 20.04 - va eseguito come utente hadoop
 
 # 1. Impostazioni iniziali
 SPARK_VERSION="3.5.0"
@@ -50,7 +48,7 @@ else
     echo "✅ Spark estratto in $INSTALL_DIR"
 fi
 
-# 4. Aggiungi variabili d'ambiente
+# 4. Configurazione variabili d'ambiente
 if ! grep -q "SPARK_HOME" ~/.bashrc; then
     echo "" >> ~/.bashrc
     echo "# Spark environment" >> ~/.bashrc
@@ -73,7 +71,7 @@ else
     echo "❌ spark-env.sh.template non trovato. Verifica che l'estrazione sia andata a buon fine."
 fi
 
-# 6. Configura slaves/workers
+# 6. Configurazione slaves/workers
 if [ -d "$INSTALL_DIR/conf" ]; then
     echo -e "worker1\nworker2" > "$INSTALL_DIR/conf/workers"
     echo "✅ worker1 e worker2 aggiunti come worker"
@@ -83,11 +81,5 @@ fi
 
 # 7. Fine
 source ~/.bashrc
-
-echo ""
-echo "✨ Installazione Spark completata! Verifica con:"
-echo "    spark-shell --version"
-echo "    start-master.sh  # (se vuoi testare standalone mode)"
-echo "    start-worker.sh spark://master:7077"
 
 exit 0
