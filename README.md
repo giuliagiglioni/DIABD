@@ -432,7 +432,8 @@ Questo output appare **solo se e quando** il producer Kafka invia una notizia co
 > * Utilizza outputMode("append"), quindi ogni nuova categoria viene stampata una sola volta, nel momento in cui viene scoperta.
 > * Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale. 
 
-    
+---
+
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
     cd ~/kafka
