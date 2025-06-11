@@ -4,9 +4,9 @@ from pyspark.sql.window import Window
 from pyspark.sql.functions import col, concat_ws, when, pandas_udf, udf, length, lower, regexp_replace, rank
 from pyspark.ml.linalg import Vectors, VectorUDT
 from pyspark.sql.types import ArrayType, FloatType
-from pyspark.ml.clustering import KMeans # Keep KMeans, remove BisectingKMeans
+from pyspark.ml.clustering import KMeans # KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
-from pyspark.ml.feature import PCA, StandardScaler # Keep PCA, StandardScaler
+from pyspark.ml.feature import PCA, StandardScaler # PCA e StandardScaler
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -21,23 +21,22 @@ LOCAL_OUTPUT_DIR = "file:///home/hadoop/TrendSpotter-Cluster/data/output/" # Per
 HDFS_MODEL_DIR = "hdfs:///user/hadoop/models" # Percorso HDFS per i modelli
 
 # Modello Embedding e Parametri Ottimali
-SENTENCE_MODEL_NAME = 'all-mpnet-base-v2' # Modello Sentence Transformer da usare
+SENTENCE_MODEL_NAME = 'all-mpnet-base-v2' # Modello Sentence Transformer 
 K_CLUSTERS = 5 # Valore K ottimale trovato
 MAX_ITERATIONS = 200 # Parametro KMeans ottimizzato
 
 # Pipeline di Preprocessing Feature
 USE_TEXT_PREPROCESSING = True # Mantieni pulizia testo
-MIN_TEXT_LENGTH = 0 # Mantieni filtro lunghezza (o metti 0 se non serve)
-USE_SCALER = True # StandardScaler (z-score)
-USE_PCA = True # PCA (riduzione dimensionale)
-PCA_COMPONENTS = 40 # Numero di componenti PCA da mantenere
-PREDICTION_COL = "prediction" # Nome della colonna di previsione KMeans
+MIN_TEXT_LENGTH = 0 # Filtro lunghezza (o metti 0 se non serve)
+USE_SCALER = True # StandardScaler 
+USE_PCA = True # PCA 
+PCA_COMPONENTS = 40 # Numero di componenti PCA
+PREDICTION_COL = "prediction" 
 
-# --- CONFIGURAZIONE FINE ---
 
 # Crea la sessione Spark
 def get_spark():
-    # Usiamo configurazioni che supportano il carico
+    # Configurazione che supporta il carico
     return SparkSession.builder \
         .appName(f"TrendSpotter Analyze News") \
         .master("yarn") \
@@ -60,7 +59,7 @@ def clean_text(text):
     return text
 clean_text_udf = udf(clean_text)
 
-# ---------------- Funzione UDF per generare embedding---------------
+#  Funzione UDF per generare embedding
 @pandas_udf(ArrayType(FloatType()))
 def generate_embeddings_udf(texts: pd.Series) -> pd.Series:
     global sentence_model
@@ -78,9 +77,8 @@ def generate_embeddings_udf(texts: pd.Series) -> pd.Series:
 # Funzione UDF per convertire Array in VectorUDT
 to_vector_udf = udf(lambda x: Vectors.dense(x) if x is not None else None, VectorUDT()) 
 
-# ------------------------------------------------------------------------------------------
 
-# Carica, Seleziona, Filtra per Data
+# Inizio del processo di analisi
 print(f"\n[*] Lettura dataset da: {HDFS_INPUT_PATH}")
 try:
     df_raw = spark.read.json(HDFS_INPUT_PATH)
@@ -97,7 +95,7 @@ count_after_filter = df.count()
 print(f"[*] Record dopo filtro data: {count_after_filter}")
 if count_after_filter == 0: print("[ATTENZIONE] Nessun record trovato..."); spark.stop(); sys.exit(1)
 
-# Raggruppamento Manuale Categorie (Sostituisce 'category')
+# Raggruppamento Manuale Categorie
 print("[*] Raggruppamento categorie...")
 df = df.withColumn(
     "category_temp_grouped",
@@ -129,7 +127,7 @@ df = df.drop("category").withColumnRenamed("category_temp_grouped", "category")
 print("[*] Conteggio categorie dopo raggruppamento:")
 df.groupBy("category").count().orderBy(col("count").desc()).show(n=30, truncate=False)
 
-# Prepara e Pulisci Testo
+# Preparazione del testo
 print("[*] Preparazione testo (headline + short_description)...")
 df = df.withColumn("text", concat_ws(" ", col("headline"), col("short_description"))) \
        .filter(col("text").isNotNull() & (col("text") != ""))
@@ -141,7 +139,7 @@ if USE_TEXT_PREPROCESSING:
     print(f"[*] Record dopo pulizia testo e filtro lunghezza: {count_after_preprocessing}")
     if count_after_preprocessing == 0: print("[ATTENZIONE] Nessun record rimasto dopo pulizia testo..."); spark.stop(); sys.exit(1)
 
-# Genera Embeddings
+# Generazione Embeddings
 print(f"[*] Generazione Sentence Embeddings con '{SENTENCE_MODEL_NAME}'...")
 try:
     df_with_embeddings_arr = df.withColumn("embedding_array", generate_embeddings_udf(col("text")))
@@ -179,21 +177,21 @@ if USE_PCA:
     pca = PCA(k=PCA_COMPONENTS, inputCol=feature_col_for_kmeans, outputCol="pca_features")
     pca_model = pca.fit(processed_df)
     processed_df = pca_model.transform(processed_df)
-    feature_col_for_kmeans = "pca_features" # Usa le feature PCA per KMeans
+    feature_col_for_kmeans = "pca_features" # Uso le feature PCA per KMeans
     # --- SALVATAGGIO MODELLO PCA ---
     pca_model_path = f"{HDFS_MODEL_DIR}/pca_model_{SENTENCE_MODEL_NAME.replace('-', '_')}_k{PCA_COMPONENTS}"
     print(f"[*] Salvataggio modello PCA in: {pca_model_path}")
     try:
         pca_model.write().overwrite().save(pca_model_path)
         print(f"✅ Modello PCA salvato.")
-        # Stampa varianza spiegata
+        # Calcola e stampa la varianza spiegata totale
         explained_variance = np.sum(pca_model.explainedVariance)
         print(f"[*] Varianza totale spiegata da {PCA_COMPONENTS} componenti PCA: {explained_variance:.4f}")
     except Exception as save_err:
         print(f"[ERRORE] Fallito salvataggio modello PCA: {save_err}")
 
 print(f"[*] Colonna features finale per KMeans: '{feature_col_for_kmeans}'")
-processed_df.select(feature_col_for_kmeans).printSchema() # Verifica tipo finale
+processed_df.select(feature_col_for_kmeans).printSchema() # Stampa schema delle features finali
 
 
 # KMeans Clustering 
@@ -229,11 +227,11 @@ else:
 if clustered is not None:
     print(f"[*] Salvataggio risultati CSV finali in: {LOCAL_OUTPUT_DIR}")
     try:
-        # A. Titoli con cluster e categoria raggruppata
+        # A. Salva i risultati con le previsioni di cluster
         clustered.select("headline", "category", "prediction") \
                  .write.mode("overwrite").option("header", True) \
                  .csv(LOCAL_OUTPUT_DIR + "topics_with_cluster")
-       # B. Relazione cluster-categoria raggruppata
+       # B. Cluster e categorie
         cluster_category_agg = clustered.groupBy("prediction", "category").count() 
         cluster_category_agg.write.mode("overwrite").option("header", True).csv(LOCAL_OUTPUT_DIR + "topics_vs_category")
         print(f"\n[*] Composizione TOP 3 Categorie per Ciascun Cluster (K={K_CLUSTERS}):")
@@ -264,7 +262,7 @@ if model is not None:
 else:
     print("[INFO] Salvataggio modello KMeans saltato.")
 
-# Liberare cache
+# Pulizia Risorse
 if 'df_with_embeddings' in locals() and df_with_embeddings.is_cached:
     df_with_embeddings.unpersist()
 if 'processed_df' in locals() and hasattr(processed_df, 'is_cached') and processed_df.is_cached:
