@@ -85,7 +85,7 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 |   └── setup_kafka.sh         
 ```
 
-## Setup Architettura e Installazione
+##  Setup Architettura e Installazione
 
 Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) su Ubuntu 20.04.
 
