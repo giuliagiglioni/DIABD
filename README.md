@@ -5,11 +5,11 @@
 * [Stack Tecnologico](#stack-tecnologico)
 * [Dataset Utilizzato](#dataset-utilizzato)
 * [Struttura del Progetto](#struttura-del-progetto)
-* [Setup Architettura e Installazione](#️setup-architettura-e-installazione)
+* [Setup Architettura e Installazione](#setup-architettura-e-installazione)
 * [Preprocessing Dati (in Batch e Stream)](#preprocessing-dati-in-batch-e-stream)
 * [Pipeline ML Avanzata e Clustering (Batch e Stream)](#pipeline-ml-avanzata-e-clustering-batch-e-stream)
 * [Identificazione e Monitoraggio dei Trend](#identificazione-e-monitoraggio-dei-trend)
-* [Grafo Neo4j e Abilitazione Raccomandazioni](#️grafo-neo4j-e-abilitazione-raccomandazioni)
+* [Grafo Neo4j e Abilitazione Raccomandazioni](#grafo-neo4j-e-abilitazione-raccomandazioni)
 * [Overview del Sistema](#overview-del-sistema)
 * [Come Eseguire il Progetto](#come-eseguire-il-progetto)
 * [Query Neo4j Utilizzate](#query-neo4j-utilizzate)
@@ -85,7 +85,7 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 |   └── setup_kafka.sh         
 ```
 
-##  Setup Architettura e Installazione
+## Setup Architettura e Installazione
 
 Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) su Ubuntu 20.04.
 
@@ -351,7 +351,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 ```
  Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
 
-*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Setup Architettura e Installazione](#️setup-architettura-e-installazione))*
+*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Setup Architettura e Installazione](#setup-architettura-e-installazione))*
 
 3.    **Avvio Neo4j**
 (Eseguire dal nodo `master`, come utente `hadoop`)
