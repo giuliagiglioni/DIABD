@@ -403,13 +403,13 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
   ```
    *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
    
-### 📊 Guida all'Output della Console (Streaming Attivo)
+# Guida all'Output della Console (Streaming Attivo)
 
 Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale. Questi sono generati da due query di streaming separate che girano in parallelo, permettendo di monitorare diversi aspetti dell'analisi simultaneamente.
 
 ---
 
-#### 📈 1. Analisi dei Trend (su Finestre Temporali)
+#### Analisi dei Trend (su Finestre Temporali)
 
 Questo output appare periodicamente e mostra l'attività aggregata dei temi (cluster) scoperti da Spark. Serve per capire quali argomenti sono più discussi in un dato intervallo di tempo.
 
@@ -420,6 +420,16 @@ Questo output appare periodicamente e mostra l'attività aggregata dei temi (clu
 > * **Contenuto:** La tabella elenca i `ClusterID` (da 0 a 4, se K=5) attivi in quella finestra e il loro `count` (numero di notizie).
 > * **Come Trovare il Trend:** Poiché con `outputMode("update")` l'ordinamento per conteggio non è garantito, per identificare il tema più frequente in quel blocco, dovrai **scorrere visivamente** le poche righe (massimo 5 in questo caso) e trovare il `ClusterID` con il `count` più alto.
 > * **Capire il Trend:** Per capire **COSA** rappresenta quel ClusterID (es. 'Cluster 2'), è necessario esaminare i suoi contenuti (titoli) nel grafo Neo4j.
+
+#### Allerta per Nuove Categorie Rilevate
+
+Questo output appare **solo se e quando** il producer Kafka invia una notizia con una categoria che **non** è presente nella lista delle 22 categorie raggruppate conosciute.
+
+> #### **Come Interpretare l'Allerta delle Nuove Categorie**
+>
+> * **Quando Appare:** Questa tabella compare solo nel momento esatto in cui viene rilevata una categoria sconosciuta per la prima volta.
+> * **Cosa Mostra:** Utilizza `outputMode("append")`, quindi ogni nuova categoria viene stampata **una sola volta**.
+> * **Scopo:** Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale, dimostrando la capacità del sistema di adattarsi a dati imprevisti.
 
     
     **Guida all'Output della Console (Streaming Attivo):**
