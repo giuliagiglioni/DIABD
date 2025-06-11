@@ -21,15 +21,15 @@
 
 ## 🚀 Introduzione
 
-**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla costruzione di un grafo in Neo4j.
+**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente per la scoperta di topic, fino alla costruzione di un grafo in Neo4j.
 
-Questo progetto non si limita a processare dati, ma mira a creare una struttura dati relazionale che può servire come fondamenta per sistemi di suggerimento, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
+Questo progetto non si limita a processare dati, ma mira a creare una struttura dati relazionale che può servire come fondamenta per sistemi di raccomandazioni, dimostrando come l'integrazione di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
 
 ### 🎯 Obiettivi Principali
 
-1.  **Identificare e Monitorare Trend:** Il sistema individua i **temi** (argomenti) più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (configurato per **K=5** cluster). L'attività di questi temi viene poi **monitorata nel tempo** grazie all'analisi del flusso streaming con **finestre temporali non sovrapposte (tumbling windows)**, i cui risultati aggregati (conteggi per cluster) vengono visualizzati sulla console con `outputMode("update")` per una chiara interpretazione sequenziale.
+1.  **Identificare e Monitorare Trend:** Il sistema individua i **topics** (argomenti) più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (configurato per **K=5** cluster). L'attività di questi topics viene poi **monitorata nel tempo** grazie all'analisi del flusso streaming con **finestre temporali non sovrapposte (tumbling windows)**, i cui risultati aggregati (conteggi per cluster) vengono visualizzati sulla console con `outputMode("update")` per una chiara interpretazione sequenziale.
 2.  **Abilitare Raccomandazioni Personalizzate (tramite Grafo):** È stata costruita una ricca **struttura a grafo in Neo4j** che modella le relazioni tra utenti (simulati), notizie/topic (con `headline` e `short_description`), i 5 cluster tematici a cui appartengono e le loro categorie editoriali (raggruppate). Questa struttura **abilita la generazione di diverse tipologie di raccomandazioni personalizzate**, la cui potenzialità è **dimostrata tramite query Cypher esemplificative**, senza l'implementazione di algoritmi di Machine Learning specifici per la raccomandazione (come ALS) all'interno di Spark.
-3.  **Visualizzare Complesse Relazioni:** Viene offerta una **rappresentazione visiva chiara ed interattiva** (tramite Neo4j Browser) dei legami tra argomenti (singole notizie), le categorie editoriali raggruppate, i 5 cluster tematici scoperti automaticamente e gli utenti simulati, permettendo un'esplorazione intuitiva dei dati.
+3.  **Visualizzare Complesse Relazioni:** Viene offerta una **rappresentazione visiva chiara ed interattiva** (tramite Neo4j Browser) delle relazioni tra topic, categorie, cluster e utenti simulati, permettendo un'esplorazione intuitiva dei dati.
 
 ## 🧰 Stack Tecnologico
 
@@ -49,7 +49,7 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
 * **Dataset Iniziale:** [News Category Dataset](https://www.kaggle.com/datasets/rmisra/news-category-dataset) - Contiene notizie dal 2012 al 2022. Le colonne principali utilizzate sono:
     * `headline`: Titolo della notizia.
     * `short_description`: Breve descrizione.
-    * `category`: Categoria editoriale originale.
+    * `category`: Categoria originale.
     * `date`: Data di pubblicazione (formato `YYYY-MM-DD`).
 * **Dati di Streaming (Simulati):** Il producer Kafka invia messaggi JSON con `headline`, `category` e `short_description`.
     ```json
@@ -87,7 +87,7 @@ TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 
 ## 🛠️ Setup Architettura e Installazione
 
-Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) Ubuntu 20.04.
+Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) su Ubuntu 20.04.
 
 * 🧠 **master** (`192.168.56.10`): NameNode HDFS, ResourceManager YARN, Broker Kafka, Server Neo4j 4.4, nodo driver Spark.
 * ⚙️ **worker1** (`192.168.56.11`): DataNode HDFS, NodeManager YARN, nodo worker Spark.
@@ -269,8 +269,8 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 ### 7. Installazione Neo4j (su VM Master)
 * Aggiungere repository APT Neo4j, installare `neo4j=1:4.4.x -y`.
 * Configurare `/etc/neo4j/neo4j.conf`:
-    * `server.bolt.listen_address=0.0.0.0:7687`
-    * `server.http.listen_address=0.0.0.0:7474`
+    * `dbms.connector.bolt.listen_address=0.0.0.0:7687`
+    * `dbms.connector.http.listen_address=0.0.0.0:7474`
     * Impostare limiti di memoria (es. heap `1g`, pagecache `1g`).
     * `dbms.security.auth_enabled=true`.
 * Avviare/abilitare servizio: `sudo systemctl start neo4j && sudo systemctl enable neo4j`.
@@ -315,13 +315,13 @@ Per superare i limiti di approcci più semplici, è stata implementata una pipel
 
 L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scoperti:
 
-* **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quanti topic per cluster) e la loro composizione rispetto alle categorie raggruppate (output CSV `topics_vs_category`).
-* **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato.
+* **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quanti topic per cluster) e la loro composizione rispetto alle categorie raggruppate.
+* **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato. Inoltre, durante lo streaming viene stampata una tabella contenente le nuove categorie inviduate durante l'arrivo di nuove notizie.
 
 ## 🕸️ Grafo Neo4j e Abilitazione Raccomandazioni
 
 * **Costruzione/Aggiornamento:**
-    * **Batch:** `neo4j/scripts/graph_builder.py` popola Neo4j da CSV locali del batch.
+    * **Batch:** `graph_builder.py` popola Neo4j da CSV locali del batch.
     * **Streaming:** `streaming_job.py` (con Neo4j Spark Connector) aggiorna Neo4j direttamente.
 * **Esplorazione:** Neo4j Browser (`http://master:7474`).
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
