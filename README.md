@@ -410,7 +410,7 @@ Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminal
 
 #### Analisi dei Trend (su Finestre Temporali)
 
-Questo output appare periodicamente e mostra l'attività aggregata dei temi (cluster) scoperti da Spark. Serve per capire quali argomenti sono più discussi in un dato intervallo di tempo.
+Questo output appare periodicamente e mostra i cluster in tendenza in quella finestra temporale. Serve per capire quali argomenti sono più discussi in un dato intervallo di tempo.
 
 ![](img/trend_temporale.png)
 
@@ -445,8 +445,8 @@ Questo output appare **solo se e quando** il producer Kafka invia una notizia co
   ```
 Una volta che `producer.py` invia nuove notizie:
 1.  **Elaborazione Streaming:** Lo script `streaming_job.py` (già in esecuzione) rileva questi nuovi messaggi da Kafka. Ogni notizia viene processata attraverso la pipeline ML completa.
-2.  **Aggiornamento Grafo Neo4j:** I risultati (topic, categoria raggruppata/nuova, ID cluster) vengono inviati **direttamente a Neo4j** (`bolt://master:7687`) tramite il connettore Spark. Il grafo si aggiorna quasi in tempo reale, con un ritardo legato all'intervallo di trigger e al tempo di elaborazione del micro-batch (impostato, ad esempio, per tentare un aggiornamento ogni 2-5 minuti per la demo). Puoi verificare i nuovi dati interrogando Neo4j Browser.
-3.  **Monitoraggio Trend su Console:** Parallelamente, sulla console dove è in esecuzione `streaming_job.py`, la tabella dei trend (conteggio notizie per `ClusterID` su finestre temporali non sovrapposte) verrà aggiornata quando una nuova finestra temporale si "chiude" e ha dati da mostrare (basato sull'impostazione `outputMode("update")` e da un trigger di 5-10 minuti per la demo).
+2.  **Aggiornamento Grafo Neo4j:** I risultati (notizia, categoria raggruppata/nuova, ID cluster) vengono inviati **direttamente a Neo4j** (`bolt://master:7687`) tramite il connettore Spark. Il grafo si aggiorna quasi in tempo reale, con un ritardo legato all'intervallo di trigger e al tempo di elaborazione del micro-batch (impostato, ad esempio, per tentare un aggiornamento ogni 2-5 minuti per la demo). È possibile verificare i nuovi dati interrogando Neo4j Browser.
+3.  **Monitoraggio Trend su Console:** Parallelamente, sulla console dove è in esecuzione `streaming_job.py`, la tabella dei trend verrà aggiornata quando una nuova finestra temporale si "chiude" e ha dati da mostrare.
 
 *Nota: La visualizzazione degli aggiornamenti non è istantanea a causa dei tempi di elaborazione e degli intervalli di trigger configurati per lo stream.*
 
@@ -502,6 +502,6 @@ RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse, c.id AS
 ## Conclusioni
 TrendSpotter è un progetto che mostra come costruire una pipeline Big Data completa per analizzare trend a partire da flussi di testo. Utilizzando tecnologie come Kafka, Spark, Hadoop e Neo4j, siamo riusciti a utilizzare tecniche di Machine Learning avanzate (come sentence embedding, PCA e KMeans) per raggruppare le notizie in cluster tematici coerenti.
 L’identificazione dei trend avviene sia tramite l’analisi della frequenza dei cluster in batch, sia osservando l’evoluzione nel tempo tramite Spark Streaming con finestre temporali.
-Il grafo costruito in Neo4j, aggiornato quasi in tempo reale, permette di visualizzare le relazioni tra topic, categorie e utenti e rende possibile la "generazione" e la visualizzazione di raccomandazioni.
+Il grafo costruito in Neo4j, aggiornato quasi in tempo reale, permette di visualizzare le relazioni tra notizie, categorie e utenti, rendendo possibile la "generazione" e la visualizzazione di raccomandazioni.
 
 
