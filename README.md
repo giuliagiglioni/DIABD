@@ -51,7 +51,7 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
     * `short_description`: Breve descrizione.
     * `category`: Categoria editoriale originale.
     * `date`: Data di pubblicazione (formato `YYYY-MM-DD`).
-* **Dati di Streaming (Simulati):** Il producer Kafka invia messaggi JSON con `headline` e `category`.
+* **Dati di Streaming (Simulati):** Il producer Kafka invia messaggi JSON con `headline`, `category` e `short_description`.
     ```json
    {"headline": "Titolo Notizia 1", "category": "NOME_CATEGORIA_1", "short_description": "Descrizione breve..."}
    {"headline": "Titolo Notizia 2", "category": "NOME_CATEGORIA_2", "short_description": "Altra descrizione..."}   
