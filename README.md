@@ -412,6 +412,8 @@ Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminal
 
 Questo output appare periodicamente e mostra l'attività aggregata dei temi (cluster) scoperti da Spark. Serve per capire quali argomenti sono più discussi in un dato intervallo di tempo.
 
+![](img/trend_temporale.jpg)
+
 > #### **Come Interpretare la Tabella dei Trend (Finestre Non Sovrapposte)**
 >
 > * Lo stream stamperà una tabella sulla console solo quando una finestra temporale (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
@@ -425,6 +427,8 @@ Questo output appare periodicamente e mostra l'attività aggregata dei temi (clu
 #### Allerta per Nuove Categorie Rilevate
 
 Questo output appare **solo se e quando** il producer Kafka invia una notizia con una categoria che **non** è presente nella lista delle 22 categorie raggruppate conosciute.
+
+![](img/tabella_categorie.jpg)
 
 > #### **Come Interpretare la Tabella delle Nuove Categorie**
 >
