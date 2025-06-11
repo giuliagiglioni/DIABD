@@ -2,18 +2,18 @@
 
 ## Table of Contents
 
-* [🚀 Introduction](#-introduction)
-* [🧰 Technology Stack](#-technology-stack)
-* [📦 Dataset Used](#-dataset-used)
-* [📁 Project Structure](#-project-structure)
-* [🛠️ Architecture Setup and Installation](#️-architecture-setup-and-installation)
-* [🧪 Data Preprocessing (Batch and Stream)](#-data-preprocessing-batch-and-stream)
-* [✨ Advanced ML Pipeline and Clustering (Batch and Stream)](#-advanced-ml-pipeline-and-clustering-batch-and-stream)
-* [📈 Trend Identification and Monitoring](#-trend-identification-and-monitoring)
-* [🕸️ Neo4j Graph and Recommendation Enablement](#️-neo4j-graph-and-recommendation-enablement)
-* [🚀 How to Run the Project](#-how-to-run-the-project)
-* [📊 Neo4j Queries Used](#-neo4j-queries-used)
-* [✅ Conclusions](#-conclusions)
+* [Introduction](#introduction)
+* [Technology Stack](#technology-stack)
+* [Dataset Used](#dataset-used)
+* [Project Structure](#project-structure)
+* [Architecture Setup and Installation](#️architecture-setup-and-installation)
+* [Data Preprocessing (Batch and Stream)](#data-preprocessing-batch-and-stream)
+* [Advanced ML Pipeline and Clustering (Batch and Stream)](#advanced-ml-pipeline-and-clustering-batch-and-stream)
+* [Trend Identification and Monitoring](#trend-identification-and-monitoring)
+* [Neo4j Graph and Recommendation Enablement](#️neo4j-graph-and-recommendation-enablement)
+* [How to Run the Project](#how-to-run-the-project)
+* [Neo4j Queries Used](#neo4j-queries-used)
+* [Conclusions](#conclusions)
 
 ---
 
