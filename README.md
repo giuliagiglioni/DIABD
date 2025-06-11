@@ -383,7 +383,9 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
        cd ~/TrendSpotter-Cluster/scripts
        python3 graph_builder.py
   ```
-  *(Nota: Una volta completato, andare su (http://master:7474) per visualizzare grafo)*
+  *Su (http://master:7474) è possibile visualizzare il grafo creato. Nell'immagine riportata sotto è presente un esempio.*
+
+  ![](img/grafo.png)
       
 **Passo 3: Avvio Job di Streaming** (da `master`):    
   ```bash
