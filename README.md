@@ -1,7 +1,7 @@
 # TrendSpotter: Analisi e Abilitazione di Raccomandazioni da Trend Emergenti su Flussi di Dati
 ## Indice
 
-* [Introduzione](#-introduzione)
+* [Introduzione](#introduzione)
 * [Stack Tecnologico](#-stack-tecnologico)
 * [Dataset Utilizzato](#-dataset-utilizzato)
 * [Struttura del Progetto](#-struttura-del-progetto)
