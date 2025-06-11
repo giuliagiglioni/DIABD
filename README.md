@@ -344,10 +344,10 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 (Eseguire su altri due terminali distinti. Sempre da nodo `master`, come utente `hadoop` )
 ```bash
    cd ~/kafka
-   bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
-   bin/kafka-server-start.sh -daemon config/server.properties
+   bin/zookeeper-server-start.sh -daemon config/zookeeper.properties #Esegui prima
+   bin/kafka-server-start.sh -daemon config/server.properties #Aspetta e poi esegui questo
    bin/kafka-topics.sh --list --bootstrap-server master:9092 #verifica esistenza topic
-   jps 
+   jps
 ```
  Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
 
