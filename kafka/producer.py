@@ -10,7 +10,7 @@ import random
 KAFKA_BROKER = 'master:9092' # Indirizzo del broker Kafka
 KAFKA_TOPIC = 'test'
 INPUT_FILE = 'sample_news.jsonl' # File di input JSONL
-SLEEP_TIME = 3 # Tempo di attesa tra gli invii di news
+SLEEP_TIME = 1 # Tempo di attesa tra gli invii di news
 
 producer = None
 try:
