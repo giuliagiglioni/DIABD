@@ -403,6 +403,23 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
   ```
    *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
    
+### 📊 Guida all'Output della Console (Streaming Attivo)
+
+Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale. Questi sono generati da due query di streaming separate che girano in parallelo, permettendo di monitorare diversi aspetti dell'analisi simultaneamente.
+
+---
+
+#### 📈 1. Analisi dei Trend (su Finestre Temporali)
+
+Questo output appare periodicamente e mostra l'attività aggregata dei temi (cluster) scoperti da Spark. Serve per capire quali argomenti sono più discussi in un dato intervallo di tempo.
+
+> #### **Come Interpretare la Tabella dei Trend (Finestre Non Sovrapposte)**
+>
+> * **Quando Appare:** Verrà stampata una tabella solo quando una finestra temporale (es. i nostri **2 minuti**, come impostato nello script) si "chiude" e i suoi conteggi aggregati sono finalizzati.
+> * **Cosa Mostra:** Ogni tabella si riferisce **esclusivamente** a quel specifico blocco temporale.
+> * **Contenuto:** La tabella elenca i `ClusterID` (da 0 a 4, se K=5) attivi in quella finestra e il loro `count` (numero di notizie).
+> * **Come Trovare il Trend:** Poiché con `outputMode("update")` l'ordinamento per conteggio non è garantito, per identificare il tema più frequente in quel blocco, dovrai **scorrere visivamente** le poche righe (massimo 5 in questo caso) e trovare il `ClusterID` con il `count` più alto.
+> * **Capire il Trend:** Per capire **COSA** rappresenta quel ClusterID (es. 'Cluster 2'), è necessario esaminare i suoi contenuti (titoli) nel grafo Neo4j.
 
     
     **Guida all'Output della Console (Streaming Attivo):**
