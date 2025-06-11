@@ -402,8 +402,13 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
       scripts/streaming_job.py
   ```
    *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
+   
+
     
-    Guida all'Output dei Trend sulla Console (Tumbling Windows):
+    **Guida all'Output della Console (Streaming Attivo):**
+    Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale, generati da due query di streaming separate che girano in parallelo.
+    ### 1. Analisi dei Trend (su Finestre Temporali)
+    Questo output appare periodicamente e mostra l'attività aggregata dei topics scoperti da Spark.
     ```
     ======================================================================
        INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
@@ -412,10 +417,21 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
        - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
        - La tabella elencherà i 'ClusterID' attivi in quella finestra
          e il loro 'count' (numero di notizie).
-       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
+       - NOTA: Le righe non sono garantite essere ordinate per 'count'.
+       - Per identificare il TEMA PIU' FREQUENTE in quel blocco, trovare il ClusterID con il 'count' più alto.
+       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti 
          nel grafo Neo4j usando la query Cypher appropriata.
     ======================================================================
     ```
+    ### 2. Allerta per Nuove Categorie Rilevate
+    Questo output appare **solo se e quando** il producer Kafka invia una notizia con una categoria che **non** è presente nella lista delle 22 categorie raggruppate conosciute.
+
+    ======================================================================
+    INTERPRETAZIONE TABELLA NUOVE CATEGORIE:
+    - Questa tabella appare solo quando viene rilevata una categoria sconosciuta.
+    - Utilizza outputMode("append"), quindi ogni nuova categoria viene stampata una sola volta, nel momento in cui viene scoperta.
+    - Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale. 
+    ======================================================================
 
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
