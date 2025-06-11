@@ -251,7 +251,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
             worker1
             worker2
             ```
-    * **Azioni Post-Script:** Ricaricare `~/.bashrc` su tutti i nodi.
+    * **Azioni Post-Script:** Ricaricare `source ~/.bashrc` su tutti i nodi.
 
 ### 6. Installazione Apache Kafka
 * `setup_kafka.sh`
