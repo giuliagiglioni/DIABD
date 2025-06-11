@@ -403,12 +403,10 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
   ```
    *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
 
-   
-####Guida all'Output della Console (Streaming Attivo)
- 
-Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale. Questi sono generati da due query di streaming separate che girano in parallelo, permettendo di monitorare diversi aspetti dell'analisi simultaneamente.
-
 ---
+
+### Guida all'Output della Console (Streaming Attivo)
+ Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale. Questi sono generati da due query di streaming separate che girano in parallelo, permettendo di monitorare diversi aspetti dell'analisi simultaneamente.
 
 #### Analisi dei Trend (su Finestre Temporali)
 
@@ -430,9 +428,9 @@ Questo output appare **solo se e quando** il producer Kafka invia una notizia co
 
 > #### **Come Interpretare la Tabella delle Nuove Categorie**
 >
-> * - Questa tabella appare solo quando viene rilevata una categoria sconosciuta.
-> * - Utilizza outputMode("append"), quindi ogni nuova categoria viene stampata una sola volta, nel momento in cui viene scoperta.
-> * - Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale. 
+> * Questa tabella appare solo quando viene rilevata una categoria sconosciuta.
+> * Utilizza outputMode("append"), quindi ogni nuova categoria viene stampata una sola volta, nel momento in cui viene scoperta.
+> * Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale. 
 
     
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
