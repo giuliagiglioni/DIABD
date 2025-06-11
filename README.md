@@ -496,7 +496,7 @@ MATCH (c:Cluster {id: 'ID_CLUSTER'})-[:CONTAINS]->(t:Topic)<-[:INTERESTED_IN]-(u
 RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse, c.id AS ClusterID;
 ```
 ## ✅ Conclusioni
-TrendSpotter è un progetto che mostra come costruire una pipeline Big Data completa per analizzare trend a partire da flussi di testo. Utilizzando tecnologie come Kafka, Spark, Hadoop e Neo4j, siamo riusciti a combinare tecniche di NLP e Machine Learning (come sentence embedding, PCA e KMeans) per raggruppare le notizie in cluster tematici coerenti.
+TrendSpotter è un progetto che mostra come costruire una pipeline Big Data completa per analizzare trend a partire da flussi di testo. Utilizzando tecnologie come Kafka, Spark, Hadoop e Neo4j, siamo riusciti a utilizzare tecniche di Machine Learning avanzate (come sentence embedding, PCA e KMeans) per raggruppare le notizie in cluster tematici coerenti.
 L’identificazione dei trend avviene sia tramite l’analisi della frequenza dei cluster in batch, sia osservando l’evoluzione nel tempo tramite Spark Streaming con finestre temporali.
 Il grafo costruito in Neo4j, aggiornato quasi in tempo reale, permette di visualizzare le relazioni tra topic, categorie e utenti e rende possibile la "generazione" e la visualizzazione di raccomandazioni.
 
