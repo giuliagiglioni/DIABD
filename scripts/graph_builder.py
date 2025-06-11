@@ -27,13 +27,13 @@ def add_users(tx):
       MERGE (giulia:User {name: 'Giulia'})
 
       // Connetti Daniele a tutti i Topic della categoria POLITICS
-      WITH daniele, giulia
+      WITH daniele
       MATCH (politics_topic:Topic)-[:BELONGS_TO]->(c:Category {name: 'POLITICS'})
       MERGE (daniele)-[:INTERESTED_IN]->(politics_topic)
 
-      // Connetti Giulia a tutti i Topic della categoria ARTS_CULTURE
+      // Connetti Giulia a tutti i Topic della categoria 
       WITH giulia
-      MATCH (arts_topic:Topic)-[:BELONGS_TO]->(c2:Category {name: 'ARTS_CULTURE'})
+      MATCH (arts_topic:Topic)-[:BELONGS_TO]->(c2:Category {name: 'ENTERTAINMENT_MEDIA'})
       MERGE (giulia)-[:INTERESTED_IN]->(arts_topic)
     """)
 
@@ -52,3 +52,4 @@ with driver.session() as session:
 
         session.execute_write(add_users)
         print("\n✅ Grafo costruito in Neo4j con successo!")
+        
