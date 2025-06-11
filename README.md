@@ -405,10 +405,10 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
    
 
     
-    **Guida all'Output della Console (Streaming Attivo):**
+   **Guida all'Output della Console (Streaming Attivo):**
     Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale, generati da due query di streaming separate che girano in parallelo.
-    ### 1. Analisi dei Trend (su Finestre Temporali)
-    Questo output appare periodicamente e mostra l'attività aggregata dei topics scoperti da Spark.
+   ### 1. Analisi dei Trend (su Finestre Temporali)
+   Questo output appare periodicamente e mostra l'attività aggregata dei topics scoperti da Spark.
     ```
     ======================================================================
        INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
@@ -425,14 +425,14 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
     ```
     ### 2. Allerta per Nuove Categorie Rilevate
     Questo output appare **solo se e quando** il producer Kafka invia una notizia con una categoria che **non** è presente nella lista delle 22 categorie raggruppate conosciute.
-
+     ```
     ======================================================================
     INTERPRETAZIONE TABELLA NUOVE CATEGORIE:
     - Questa tabella appare solo quando viene rilevata una categoria sconosciuta.
     - Utilizza outputMode("append"), quindi ogni nuova categoria viene stampata una sola volta, nel momento in cui viene scoperta.
     - Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale. 
     ======================================================================
-
+    ```
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
     cd ~/kafka
