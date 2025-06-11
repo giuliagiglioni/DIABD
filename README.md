@@ -219,7 +219,7 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
             worker1
             worker2
             ```
-    * **Azioni Post-Script `setup_hadoop.sh` (Manuali):**
+    * **Azioni (Manuali) Post-Script `setup_hadoop.sh`:**
         1.  Copiare la cartella Hadoop configurata (`~/hadoop`) dal `master` ai `worker`:
             ```bash
             scp -r ~/hadoop hadoop@worker1:/home/hadoop/
