@@ -1,37 +1,37 @@
 # TrendSpotter: Analisi e Abilitazione di Raccomandazioni da Trend Emergenti su Flussi di Dati
 ## Indice
 
-* [🚀 Introduzione](#-introduzione)
-* [🧰 Stack Tecnologico](#-stack-tecnologico)
-* [📦 Dataset Utilizzato](#-dataset-utilizzato)
-* [📁 Struttura del Progetto](#-struttura-del-progetto)
-* [🛠️ Setup Architettura e Installazione](#️-setup-architettura-e-installazione)
-* [🧪 Preprocessing Dati (in Batch e Stream)](#-preprocessing-dati-in-batch-e-stream)
-* [✨ Pipeline ML Avanzata e Clustering (Batch e Stream)](#-pipeline-ml-avanzata-e-clustering-batch-e-stream)
-* [📈 Identificazione e Monitoraggio dei Trend](#-identificazione-e-monitoraggio-dei-trend)
-* [🕸️ Grafo Neo4j e Abilitazione Raccomandazioni](#️-grafo-neo4j-e-abilitazione-raccomandazioni)
-* [🌐 Overview del Sistema](#-overview-del-sistema)
-* [🚀 Come Eseguire il Progetto](#-come-eseguire-il-progetto)
-* [📊 Query Neo4j Utilizzate](#-query-neo4j-utilizzate)
-* [✅ Conclusioni](#-conclusioni)
+* [Introduzione](#introduzione)
+* [Stack Tecnologico](#stack-tecnologico)
+* [Dataset Utilizzato](#dataset-utilizzato)
+* [Struttura del Progetto](#struttura-del-progetto)
+* [Setup Architettura e Installazione](#setup-architettura-e-installazione)
+* [Preprocessing Dati (in Batch e Stream)](#preprocessing-dati-in-batch-e-stream)
+* [Pipeline ML Avanzata e Clustering (Batch e Stream)](#pipeline-ml-avanzata-e-clustering-batch-e-stream)
+* [Identificazione e Monitoraggio dei Trend](#identificazione-e-monitoraggio-dei-trend)
+* [Grafo Neo4j e Abilitazione Raccomandazioni](#grafo-neo4j-e-abilitazione-raccomandazioni)
+* [Overview del Sistema](#overview-del-sistema)
+* [Come Eseguire il Progetto](#come-eseguire-il-progetto)
+* [Query Neo4j Utilizzate](#query-neo4j-utilizzate)
+* [Conclusioni](#conclusioni)
 
 
 🇮🇹 Questo progetto è descritto in italiano.  
-🌍 [Read this README in English](README.en.md)
+[Read this README in English](README.en.md)
 
-## 🚀 Introduzione
+## Introduzione
 
-**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente (KMeans ottimizzato) per la scoperta di topic, fino alla costruzione di un grafo in Neo4j.
+**TrendSpotter** è un sistema distribuito progettato per l'identificazione di **trend emergenti** in tempo reale e per costruire una base dati che **abilita la generazione di raccomandazioni**. Prendendo ispirazione da piattaforme dinamiche come Twitter Trends e Google News, il sistema orchestra un potente insieme di tecnologie Big Data: dall'ingestione di flussi di dati continui (simulati tramite Kafka), all'analisi testuale semantica avanzata (con Sentence Embeddings), al clustering intelligente per la scoperta di trend, fino alla costruzione di un grafo in Neo4j.
 
-Questo progetto non si limita a processare dati, ma mira a creare una struttura dati relazionale che può servire come fondamenta per sistemi di suggerimento, dimostrando come l'integrazione sinergica di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
+Questo progetto non si limita a processare dati, ma mira a creare una struttura dati relazionale che può servire come fondamenta per sistemi di raccomandazioni, dimostrando come l'integrazione di Kafka, Spark, Hadoop e Neo4j possa dare vita a sistemi informativi dinamici e intelligenti.
 
-### 🎯 Obiettivi Principali
+### Obiettivi Principali
 
-1.  **Identificare e Monitorare Trend:** Il sistema individua i **temi** (argomenti) più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (configurato per **K=5** cluster). L'attività di questi temi viene poi **monitorata nel tempo** grazie all'analisi del flusso streaming con **finestre temporali non sovrapposte (tumbling windows)**, i cui risultati aggregati (conteggi per cluster) vengono visualizzati sulla console con `outputMode("update")` per una chiara interpretazione sequenziale.
-2.  **Abilitare Raccomandazioni Personalizzate (tramite Grafo):** È stata costruita una ricca **struttura a grafo in Neo4j** che modella le relazioni tra utenti (simulati), notizie/topic (con `headline` e `short_description`), i 5 cluster tematici a cui appartengono e le loro categorie editoriali (raggruppate). Questa struttura **abilita la generazione di diverse tipologie di raccomandazioni personalizzate**, la cui potenzialità è **dimostrata tramite query Cypher esemplificative**, senza l'implementazione di algoritmi di Machine Learning specifici per la raccomandazione (come ALS) all'interno di Spark.
-3.  **Visualizzare Complesse Relazioni:** Viene offerta una **rappresentazione visiva chiara ed interattiva** (tramite Neo4j Browser) dei legami tra argomenti (singole notizie), le categorie editoriali raggruppate, i 5 cluster tematici scoperti automaticamente e gli utenti simulati, permettendo un'esplorazione intuitiva dei dati.
+1.  **Identificare e Monitorare Trend:** Il sistema individua gli **argomenti** più **frequenti e rilevanti** all'interno dei dati di notizie recenti (filtrati dal 2020 in poi). Questo viene realizzato tramite un clustering semantico avanzato (configurato per **K=5** cluster). L'andamento del trend viene poi **monitorato nel tempo** grazie all'analisi del flusso streaming con **finestre temporali non sovrapposte (tumbling windows)**, i cui risultati aggregati (conteggi per cluster) vengono visualizzati sulla console con `outputMode("update")` per una chiara interpretazione.
+2.  **Abilitare Raccomandazioni Personalizzate (tramite Grafo):** È stata costruita una ricca **struttura a grafo in Neo4j** che modella le relazioni tra utenti (simulati), notizie (con `headline` e `short_description`), cluster e categorie. Questa struttura **abilita la generazione di diverse tipologie di raccomandazioni personalizzate**, la cui potenzialità è **dimostrata tramite query Cypher esemplificative**, senza l'implementazione di algoritmi di Machine Learning specifici per la raccomandazione (come ALS) all'interno di Spark.
+3.  **Visualizzare Complesse Relazioni:** Viene offerta una **rappresentazione visiva chiara ed interattiva** tramite Neo4j Browser, permettendo un'esplorazione intuitiva dei dati.
 
-## 🧰 Stack Tecnologico
+## Stack Tecnologico
 
 | Tecnologia                 | Scopo Principale nel Progetto                                                                                                | Versione (Indicativa) |
 | :------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
@@ -44,50 +44,50 @@ Questo progetto non si limita a processare dati, ma mira a creare una struttura 
 | **Neo4j Spark Connector** | Libreria Spark per scrivere dati da Spark Streaming direttamente a Neo4j.                                                   | 5.2.0 (o compatibile) |
 | **Java (OpenJDK)** | Ambiente di esecuzione per Hadoop, Spark e Neo4j 4.4 sul cluster.                                                            | 11                    |
 
-## 📦 Dataset Utilizzato
+## Dataset Utilizzato
 
 * **Dataset Iniziale:** [News Category Dataset](https://www.kaggle.com/datasets/rmisra/news-category-dataset) - Contiene notizie dal 2012 al 2022. Le colonne principali utilizzate sono:
     * `headline`: Titolo della notizia.
     * `short_description`: Breve descrizione.
-    * `category`: Categoria editoriale originale.
+    * `category`: Categoria della notizia.
     * `date`: Data di pubblicazione (formato `YYYY-MM-DD`).
 * **Dati di Streaming (Simulati):** Il producer Kafka invia messaggi JSON con `headline`, `category` e `short_description`.
     ```json
    {"headline": "Titolo Notizia 1", "category": "NOME_CATEGORIA_1", "short_description": "Descrizione breve..."}
    {"headline": "Titolo Notizia 2", "category": "NOME_CATEGORIA_2", "short_description": "Altra descrizione..."}   
     ```
-## 📁 Struttura del Progetto
+## Struttura del Progetto
 ```
 TrendSpotter-Cluster/    (in /home/hadoop/ sulla VM master)
 │
 ├── kafka/
 │   ├── producer.py          # Invia notizie a Kafka
-│   └── sample_news.jsonl  # Esempio di file per il producer
+│   └── sample_news.jsonl    # Esempio di file per il producer
 │
 ├── scripts/
 │   ├── analyze_batch.py     # Job Batch: Preprocessing, Embedding, Scaler, PCA, Training KMeans K=5, Salva Modelli/CSV
 │   └── streaming_job.py     # Job Streaming: Legge Kafka, Carica Modelli, Applica Pipeline, Scrive su Neo4j, Monitora Trend
 |   └── graph_builder.py     # Costruzione del grafo
 │
-├── models/ (SU HDFS!)         # Percorso: hdfs:///user/hadoop/models/
+├── models/ (SU HDFS!)
 │   ├── scaler_model_all_mpnet_base_v2/
 │   ├── pca_model_all_mpnet_base_v2_k40/
 │   └── kmeans_embedding_all_mpnet_base_v2_k5_scaled_pca40/ 
 │
-├── data/                      # Dati locali sulla VM master
+├── data/                 
 │   └── output/                
 │       ├── topics_with_cluster/ 
 │       └── topics_vs_category/  
 │
-├── setup/                   # Script di setup
+├── setup/                 
 │   └── setup_hadoop.sh 
 |   └── setup_spark.sh
 |   └── setup_kafka.sh         
 ```
 
-## 🛠️ Setup Architettura e Installazione
+## Setup Architettura e Installazione
 
-Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) Ubuntu 20.04.
+Il sistema è implementato su un cluster simulato di 3 Virtual Machine (VM) su Ubuntu 20.04.
 
 * 🧠 **master** (`192.168.56.10`): NameNode HDFS, ResourceManager YARN, Broker Kafka, Server Neo4j 4.4, nodo driver Spark.
 * ⚙️ **worker1** (`192.168.56.11`): DataNode HDFS, NodeManager YARN, nodo worker Spark.
@@ -269,8 +269,8 @@ L'installazione e la configurazione di base di Hadoop, Spark e Kafka sono gestit
 ### 7. Installazione Neo4j (su VM Master)
 * Aggiungere repository APT Neo4j, installare `neo4j=1:4.4.x -y`.
 * Configurare `/etc/neo4j/neo4j.conf`:
-    * `server.bolt.listen_address=0.0.0.0:7687`
-    * `server.http.listen_address=0.0.0.0:7474`
+    * `dbms.connector.bolt.listen_address=0.0.0.0:7687`
+    * `dbms.connector.http.listen_address=0.0.0.0:7474`
     * Impostare limiti di memoria (es. heap `1g`, pagecache `1g`).
     * `dbms.security.auth_enabled=true`.
 * Avviare/abilitare servizio: `sudo systemctl start neo4j && sudo systemctl enable neo4j`.
@@ -289,10 +289,10 @@ pip install --user pandas pyarrow sentence-transformers torch neo4j kafka-python
 * Scaricare il dataset (`News_Category_Dataset_v3.json`) e caricarlo su HDFS nel percorso atteso dagli script (es. `hdfs dfs -put News_Category_Dataset_v3.json /user/hadoop/news/`).
 * Installare le librerie Python necessarie (`pip install pyspark neo4j kafka-python pandas` - `pyspark` spesso non serve installarlo a mano se si usa `spark-submit` che lo include) nell'ambiente Python usato da Spark e dagli script locali.
 
-## 🌐 Overview del Sistema
+## Overview del Sistema
 ![Architettura del Sistema](img/schema.jpg)
 
-## 🧪 Preprocessing Dati (in Batch e Stream)
+## Preprocessing Dati (in Batch e Stream)
 
 Per migliorare la qualità e la rilevanza dell'analisi, sono stati implementati i seguenti passi di preprocessing:
 
@@ -300,7 +300,7 @@ Per migliorare la qualità e la rilevanza dell'analisi, sono stati implementati 
 2.  **Raggruppamento Semantico delle Categorie:** Le 42 categorie originali del dataset sono state consolidate manualmente in **22 categorie finali** più significative e meno frammentate (es. `ARTS_CULTURE`, `BUSINESS_FINANCE`, `PARENTING_FAMILY`, `VOICES`, `GOOD_WEIRD_NEWS`, `OTHER`). La colonna `category` nel DataFrame processato (e quindi nel grafo) contiene questi nomi raggruppati. Le categorie completamente nuove incontrate nello stream vengono mantenute con il loro nome originale.
 3.  **Pulizia Avanzata del Testo:** Prima della generazione degli embedding, il testo combinato di `headline` e `short_description` (nel batch) e nello stream, viene sottoposto a pulizia: conversione in lowercase, rimozione di URL, numeri isolati e punteggiatura eccessiva, e normalizzazione degli spazi. È stato impostato `MIN_TEXT_LENGTH = 0` (nessun filtro sulla lunghezza minima del testo).
 
-## ✨ Pipeline ML Avanzata e Clustering (Batch e Stream)
+## Pipeline ML Avanzata e Clustering (Batch e Stream)
 
 Per superare i limiti di approcci più semplici, è stata implementata una pipeline ML sofisticata:
 
@@ -311,22 +311,22 @@ Per superare i limiti di approcci più semplici, è stata implementata una pipel
 5.  **Clustering (KMeans):** L'algoritmo KMeans viene applicato alle feature finali (output della PCA). È stato scelto **K=5** come numero di cluster, basandosi su sperimentazioni che hanno indicato una modesta ma positiva qualità di clustering (Metrica utilizzata: Silhouette Score di **~0.13** nel batch). Il modello `KMeansModel` addestrato nel batch viene salvato e riutilizzato nello stream.
 6.  **Salvataggio e Caricamento Modelli:** Tutti i modelli della pipeline (Scaler, PCA, KMeans) addestrati da `analyze_batch.py` vengono salvati su HDFS. Lo script `streaming_job.py` carica questi stessi modelli per garantire coerenza assoluta nell'elaborazione dei dati in tempo reale.
 
-## 📈 Identificazione e Monitoraggio dei Trend
+## Identificazione e Monitoraggio dei Trend
 
 L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scoperti:
 
-* **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quanti topic per cluster) e la loro composizione rispetto alle categorie raggruppate (output CSV `topics_vs_category`).
-* **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato.
+* **Trend Dominanti (Batch):** Identificati nel job batch analizzando la numerosità dei cluster (quante notizie per cluster) e la loro composizione rispetto alle categorie raggruppate.
+* **Trend Emergenti (Streaming):** Monitorati tramite **Spark Streaming con finestre temporali non sovrapposte (tumbling windows)** e `outputMode("update")`. `streaming_job.py` calcola e **stampa sulla console** la frequenza di ciascun `ClusterID` (0-4) per blocchi di tempo disgiunti (es. ogni 2 minuti per i 2 minuti precedenti). Un aumento di questi conteggi segnala un trend. L'analisi qualitativa in Neo4j ne rivela il significato. Inoltre, durante lo streaming viene stampata una tabella contenente le nuove categorie inviduate durante l'arrivo di nuove notizie.
 
-## 🕸️ Grafo Neo4j e Abilitazione Raccomandazioni
+## Grafo Neo4j e Abilitazione Raccomandazioni
 
 * **Costruzione/Aggiornamento:**
-    * **Batch:** `neo4j/scripts/graph_builder.py` popola Neo4j da CSV locali del batch.
+    * **Batch:** `graph_builder.py` popola Neo4j da CSV locali del batch.
     * **Streaming:** `streaming_job.py` (con Neo4j Spark Connector) aggiorna Neo4j direttamente.
 * **Esplorazione:** Neo4j Browser (`http://master:7474`).
 * **Abilitazione Raccomandazioni:** La struttura del grafo permette logiche di raccomandazione (dimostrate via Cypher).
 
-## 🚀 Come Eseguire il Progetto
+## Come Eseguire il Progetto
 **Passo 0: Prerequisiti**
 * Assicurarsi che il Setup completo (Hadoop, YARN, Spark, Kafka, Neo4j sulla VM `master`, Java 11, librerie Python necessarie installate su tutti i nodi come descritto nella sezione "Setup Architettura e Installazione") sia stato completato.
 * Il dataset JSON originale deve essere su HDFS.
@@ -351,7 +351,7 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
 ```
  Verifica UI Web: HDFS (http://master:9870), YARN (http://master:8088)
 
-*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Setup Architettura e Installazione](#️-setup-architettura-e-installazione))*
+*(Nota: Check su Master con jps. Bisogna vedere: QuorumPeerMain (ZooKeeper) e Kafka. Se topic non ancora creato guardare [Setup Architettura e Installazione](#setup-architettura-e-installazione))*
 
 3.    **Avvio Neo4j**
 (Eseguire dal nodo `master`, come utente `hadoop`)
@@ -402,20 +402,37 @@ L'identificazione dei trend si basa sull'analisi dei **5 cluster tematici** scop
       scripts/streaming_job.py
   ```
    *(Nota: Monitora console per trend e Neo4j Browser per aggiornamenti. Inoltre nel caso in cui si ha necessità di riavviare i servizi dfs e yarn, prima di eseguire streaming_job fare di nuovo export delle variabili d'ambiente)*
-    
-    Guida all'Output dei Trend sulla Console (Tumbling Windows):
-    ```
-    ======================================================================
-       INTERPRETAZIONE OUTPUT TRENDS SULLA CONSOLE:
-       - Lo stream stamperà una tabella sulla console solo quando una finestra temporale
-         (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
-       - Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
-       - La tabella elencherà i 'ClusterID' attivi in quella finestra
-         e il loro 'count' (numero di notizie).
-       - Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti (titoli)
-         nel grafo Neo4j usando la query Cypher appropriata.
-    ======================================================================
-    ```
+
+---
+
+### Guida all'Output della Console (Streaming Attivo)
+Quando lo script `streaming_job.py` è in esecuzione, sulla console del terminale appariranno due tipi di output informativi in tempo reale. Questi sono generati da due query di streaming separate che girano in parallelo, permettendo di monitorare diversi aspetti dell'analisi simultaneamente.
+
+#### Analisi dei Trend (su Finestre Temporali)
+
+Questo output appare periodicamente e mostra l'attività aggregata dei temi (cluster) scoperti da Spark. Serve per capire quali argomenti sono più discussi in un dato intervallo di tempo.
+
+> #### **Come Interpretare la Tabella dei Trend (Finestre Non Sovrapposte)**
+>
+> * Lo stream stamperà una tabella sulla console solo quando una finestra temporale (es. **2 minuti**) si "chiude" e i suoi conteggi aggregati sono finalizzati.
+> * Ogni tabella mostrata si riferisce ESCLUSIVAMENTE a quel specifico blocco temporale.
+> * La tabella elencherà i 'ClusterID' attivi in quella finestra e il loro 'count' (numero di notizie).
+> * NOTA: Le righe non sono garantite essere ordinate per 'count'.
+> * Per identificare il TEMA PIU' FREQUENTE in quel blocco, trovare il ClusterID con il 'count' più alto.
+> * Per capire COSA rappresenta quel ClusterID, esaminare i suoi contenuti nel grafo Neo4j usando la query Cypher appropriata.
+
+
+#### Allerta per Nuove Categorie Rilevate
+
+Questo output appare **solo se e quando** il producer Kafka invia una notizia con una categoria che **non** è presente nella lista delle 22 categorie raggruppate conosciute.
+
+> #### **Come Interpretare la Tabella delle Nuove Categorie**
+>
+> * Questa tabella appare solo quando viene rilevata una categoria sconosciuta.
+> * Utilizza outputMode("append"), quindi ogni nuova categoria viene stampata una sola volta, nel momento in cui viene scoperta.
+> * Serve come un sistema di allerta in tempo reale per la comparsa di nuovi temi editoriali non previsti dalla mappatura iniziale. 
+
+---
 
   **Passo 4: Avvio Producer Kafka** (da `master`, nuovo terminale):    
   ```bash
@@ -429,7 +446,7 @@ Una volta che `producer.py` invia nuove notizie:
 
 *Nota: La visualizzazione degli aggiornamenti non è istantanea a causa dei tempi di elaborazione e degli intervalli di trigger configurati per lo stream.*
 
-## 📊 Query Neo4j Utilizzate
+## Query Neo4j Utilizzate
 
 ```cypher
 // Query 1: Statistiche Generali del Grafo
@@ -478,8 +495,8 @@ LIMIT 10;
 MATCH (c:Cluster {id: 'ID_CLUSTER'})-[:CONTAINS]->(t:Topic)<-[:INTERESTED_IN]-(u:User)
 RETURN DISTINCT u.name AS UtenteInteressato, t.name AS TopicDiInteresse, c.id AS ClusterID;
 ```
-## ✅ Conclusioni
-TrendSpotter è un progetto che mostra come costruire una pipeline Big Data completa per analizzare trend a partire da flussi di testo. Utilizzando tecnologie come Kafka, Spark, Hadoop e Neo4j, siamo riusciti a combinare tecniche di NLP e Machine Learning (come sentence embedding, PCA e KMeans) per raggruppare le notizie in cluster tematici coerenti.
+## Conclusioni
+TrendSpotter è un progetto che mostra come costruire una pipeline Big Data completa per analizzare trend a partire da flussi di testo. Utilizzando tecnologie come Kafka, Spark, Hadoop e Neo4j, siamo riusciti a utilizzare tecniche di Machine Learning avanzate (come sentence embedding, PCA e KMeans) per raggruppare le notizie in cluster tematici coerenti.
 L’identificazione dei trend avviene sia tramite l’analisi della frequenza dei cluster in batch, sia osservando l’evoluzione nel tempo tramite Spark Streaming con finestre temporali.
 Il grafo costruito in Neo4j, aggiornato quasi in tempo reale, permette di visualizzare le relazioni tra topic, categorie e utenti e rende possibile la "generazione" e la visualizzazione di raccomandazioni.
 
