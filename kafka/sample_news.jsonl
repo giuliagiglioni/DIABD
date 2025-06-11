@@ -1,10 +1,16 @@
-{"headline": "NASA Confirms Water on Moon", "category": "SCIENCE",}
-{"headline": "Elections 2025: Early Predictions Announced", "category": "POLITICS","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "AI Breakthrough Could Change Healthcare", "category": "TECH","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "Olympics 2028 Preparation Begins in LA", "category": "SPORTS","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "New Study Links Coffee to Longevity", "category": "HEALTH"}
-{"headline": "Global Warming: New Report Released", "category": "ENVIRONMENT","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "Tech Giants Face Antitrust Scrutiny", "category": "TECH","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "New Species Discovered in Amazon Rainforest", "category": "NEW-CATEGORY1","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "Stock Market Hits Record Highs", "category": "NEW-CATEGORY2","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
-{"headline": "New Vaccine Shows Promise Against Virus", "category": "NEW-CATEGORY3","short_description": "Detailed findings from the LRO mission confirm water ice effectively."}
+{"headline": "NASA Confirms Water on Moon", "category": "SCIENCE", "short_description": "NASA confirms the presence of water ice on the lunar surface, a discovery with significant implications for future space missions."}
+{"headline": "Global Leaders Meet for Climate Summit", "category": "POLITICS", "short_description": "World leaders are gathering to discuss strategies and commitments to combat climate change and reduce global emissions."}
+{"headline": "New Smartphone Released with Innovative Features", "category": "TECH", "short_description": "A new smartphone model hits the market, introducing cutting-edge features that promise to redefine the user experience."}
+{"headline": "Test NEW-CATEGORY1", "category": "NEW-CATEGORY1","short_description": "This is NEW CATEGORY1."}
+{"headline": "Local Team Wins Championship", "category": "SPORTS", "short_description": "The local team has triumphed in the championship final, securing the title after an exciting and hard-fought season."}
+{"headline": "New Renewable Energy Project Announced", "category": "ENVIRONMENT", "short_description": "A new large-scale project for renewable energy production has been announced, marking a step forward towards sustainability."}
+{"headline": "Elections 2025: Early Predictions Announced", "category": "POLITICS", "short_description": "Political analysts have released their first projections for the upcoming election results, outlining possible future scenarios."}
+{"headline": "Test NEW-CATEGORY2", "category": "NEW-CATEGORY2","short_description": "This is NEW CATEGORY2."}
+{"headline": "AI Breakthrough Could Change Healthcare", "category": "TECH", "short_description": "A new breakthrough in artificial intelligence promises to revolutionize the healthcare industry by improving diagnostics and treatments."}
+{"headline": "Olympics 2028 Preparation Begins in LA", "category": "SPORTS", "short_description": "The city of Los Angeles has officially begun preparations to host the 2028 Olympic Games, including the construction of new infrastructure."}
+{"headline": "New Study Links Coffee to Longevity", "category": "CRYPTO_NEWS", "short_description": "A recent scientific study suggests a correlation between regular coffee consumption and a longer life expectancy."}
+{"headline": "Global Warming: New Report Released", "category": "ENVIRONMENT", "short_description": "A new international report highlights the acceleration of global warming and urges immediate action to mitigate its effects."}
+{"headline": "Tech Giants Face Antitrust Scrutiny", "category": "TECH", "short_description": "Major technology companies are under investigation by antitrust authorities for alleged anti-competitive practices."}
+{"headline": "Test NEW-CATEGORY3", "category": "NEW-CATEGORY3","short_description": "This is NEW CATEGORY3."}
+{"headline": "Bitcoin Hits New All-Time High", "category": "CRYPTO_NEWS", "short_description": "The price of Bitcoin reaches a new all-time high, breaking past previous resistance and fueling optimism among digital currency market investors."}
+{"headline": "SEC Announces New Regulations for Crypto Exchanges", "category": "CRYPTO_NEWS", "short_description": "The SEC introduces a new regulatory framework for cryptocurrency exchanges, with the goal of increasing investor protection and market stability."}
