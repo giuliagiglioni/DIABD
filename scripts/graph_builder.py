@@ -19,19 +19,19 @@ def create_graph(tx, topic, cluster, category):
         MERGE (cl)-[:CONTAINS]->(t)
     """, topic=topic, cluster=str(cluster), category=category)
 
-# 3. Simula 2 utenti con interessi (per demo)
+# 3. Simulazione di 2 utenti fittizi
 def add_users(tx):
     tx.run("""
-        // Creazione di due utenti fittizi
+        // Creazione di due utenti
       MERGE (daniele:User {name: 'Daniele'})
       MERGE (giulia:User {name: 'Giulia'})
 
-      // Connetti Daniele a tutti i Topic della categoria POLITICS
+      // Connessione Daniele a Topic della categoria POLITICS
       WITH daniele
       MATCH (politics_topic:Topic)-[:BELONGS_TO]->(c:Category {name: 'POLITICS'})
       MERGE (daniele)-[:INTERESTED_IN]->(politics_topic)
 
-      // Connetti Giulia a tutti i Topic della categoria 
+      // Connessione Giulia a Topic della categoria 
       WITH giulia
       MATCH (arts_topic:Topic)-[:BELONGS_TO]->(c2:Category {name: 'ENTERTAINMENT_MEDIA'})
       MERGE (giulia)-[:INTERESTED_IN]->(arts_topic)
